@@ -10,6 +10,7 @@ Route::get('/', [AuthController::class, 'mostrarRegistro']);
 Route::get('/registro', [AuthController::class, 'mostrarRegistro'])->name('registro.index');
 Route::post('/registrar', [AuthController::class, 'registrar'])->name('registrar.post');
 Route::post('/activar', [AuthController::class, 'activar'])->name('activar.post');
+Route::post('/reenviar-codigo', [AuthController::class, 'reenviarCodigo'])->name('reenviar.codigo');
 
 // 3. RUTAS DE LOGIN
 Route::get('/login', function () {
