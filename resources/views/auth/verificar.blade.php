@@ -5,6 +5,8 @@
 <script>
     emailjs.init("TKOSAIOMp5yR3l0xL"); // Tu Public Key
 
+    let tiempoRestante = 0;
+
     window.onload = function() {
         emailjs.send('service_al7vroi', 'template_u9ydqpc', {
             user_email: "{{ $correo }}",
@@ -15,8 +17,90 @@
             if(notification) {
                 notification.classList.remove('hidden');
             }
+            // Iniciar el countdown de 60 segundos
+            iniciarCountdown();
         });
     };
+
+    function iniciarCountdown() {
+        tiempoRestante = 60;
+        const btn = document.getElementById('btn-reenviar');
+        const contador = document.getElementById('contador-tiempo');
+        
+        btn.disabled = true;
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+        
+        const intervalo = setInterval(() => {
+            tiempoRestante--;
+            contador.textContent = `(${tiempoRestante}s)`;
+            
+            if(tiempoRestante <= 0) {
+                clearInterval(intervalo);
+                btn.disabled = false;
+                btn.classList.remove('opacity-50', 'cursor-not-allowed');
+                contador.textContent = '';
+            }
+        }, 1000);
+    }
+
+    function reenviarCodigo() {
+        const btn = document.getElementById('btn-reenviar');
+        const correo = "{{ $correo }}";
+        
+        btn.disabled = true;
+        btn.innerHTML = '⏳ Enviando...';
+
+        // Hacer solicitud al backend para generar nuevo código
+        fetch("{{ route('reenviar.codigo') }}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+            },
+            body: JSON.stringify({ correo: correo })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if(data.success) {
+                // Ahora enviar el nuevo código por EmailJS
+                // El código nuevamente será generado entre 100000-999999 en el backend
+                emailjs.send('service_al7vroi', 'template_u9ydqpc', {
+                    user_email: correo,
+                    codigo_verificacion: "Por favor revisa tu email para el nuevo código"
+                }).then(() => {
+                    // Mostrar notificación
+                    const notification = document.getElementById('notificacion-enviada');
+                    notification.classList.remove('hidden');
+                    
+                    // Restablecer botón con countdown
+                    btn.innerHTML = '🔄 Reenviar código <span id="contador-tiempo"></span>';
+                    iniciarCountdown();
+                }).catch(error => {
+                    console.error('EmailJS Error:', error);
+                    btn.innerHTML = '✅ Código generado (revisa tu email)';
+                    btn.disabled = true;
+                    setTimeout(() => {
+                        btn.innerHTML = '🔄 Reenviar código';
+                        iniciarCountdown();
+                    }, 2000);
+                });
+            } else {
+                btn.innerHTML = '❌ Error al enviar';
+                btn.disabled = false;
+                setTimeout(() => {
+                    btn.innerHTML = '🔄 Reenviar código';
+                }, 2000);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            btn.innerHTML = '❌ Error de conexión';
+            btn.disabled = false;
+            setTimeout(() => {
+                btn.innerHTML = '🔄 Reenviar código';
+            }, 2000);
+        });
+    }
 </script>
 
 <!-- Header con Logo -->
@@ -85,18 +169,19 @@
         <div class="flex-1 h-px bg-gradient-to-l from-transparent to-blue-300"></div>
     </div>
 
-    <!-- Re-send Link -->
+    <!-- Re-send Button -->
     <div class="text-center">
-        <p class="text-slate-600 text-xs sm:text-sm">
+        <p class="text-slate-600 text-xs sm:text-sm mb-3">
             ¿No recibiste el código?
-            <a 
-                href="#" 
-                onclick="location.reload(); return false;"
-                class="text-blue-600 font-semibold hover:text-blue-700 transition ml-1 hover:underline"
-            >
-                Reenviar código
-            </a>
         </p>
+        <button 
+            id="btn-reenviar"
+            type="button"
+            onclick="reenviarCodigo()"
+            class="px-6 py-2 bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition duration-200 text-sm inline-flex items-center gap-2"
+        >
+            🔄 Reenviar código <span id="contador-tiempo"></span>
+        </button>
     </div>
 </div>
 

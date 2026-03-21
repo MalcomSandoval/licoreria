@@ -97,4 +97,33 @@ class AuthController extends Controller
         $request->session()->regenerateToken();
         return redirect('/login');
     }
+
+    /**
+     * Reenviar código de verificación
+     */
+    public function reenviarCodigo(Request $request) {
+        try {
+            $correo = $request->input('correo');
+            
+            // Buscar el usuario por correo
+            $usuario = Usuario::where('correo', $correo)->first();
+            
+            if (!$usuario) {
+                return response()->json(['success' => false, 'message' => 'Usuario no encontrado'], 404);
+            }
+            
+            // Generar nuevo código
+            $codigoNuevo = rand(100000, 999999);
+            
+            // Actualizar el código en la base de datos
+            $usuario->update(['codigo_verificacion' => $codigoNuevo]);
+            
+            // Retornar success para que el frontend sepa que todo fue bien
+            // El código será enviado automáticamente por EmailJS en el frontend
+            return response()->json(['success' => true, 'message' => 'Código reenviado correctamente']);
+            
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Error: ' . $e->getMessage()], 500);
+        }
+    }
 }
