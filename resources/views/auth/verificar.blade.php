@@ -84,20 +84,6 @@
         <span class="text-blue-500 text-xs font-semibold">O</span>
         <div class="flex-1 h-px bg-gradient-to-l from-transparent to-blue-300"></div>
     </div>
-
-    <!-- Re-send Link -->
-    <div class="text-center">
-        <p class="text-slate-600 text-xs sm:text-sm">
-            ¿No recibiste el código?
-            <a 
-                href="#" 
-                onclick="location.reload(); return false;"
-                class="text-blue-600 font-semibold hover:text-blue-700 transition ml-1 hover:underline"
-            >
-                Reenviar código
-            </a>
-        </p>
-    </div>
 </div>
 
 <!-- Footer -->
