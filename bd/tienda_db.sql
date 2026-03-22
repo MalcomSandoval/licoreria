@@ -168,3 +168,70 @@ INSERT INTO `usuarios` (`id`, `nombre`, `correo`, `contrasena`, `rol`, `activo`,
 /*!40014 SET FOREIGN_KEY_CHECKS=IFNULL(@OLD_FOREIGN_KEY_CHECKS, 1) */;
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40111 SET SQL_NOTES=IFNULL(@OLD_SQL_NOTES, 1) */;
+
+
+CREATE TABLE IF NOT EXISTS `productos` (
+  `id` char(36) NOT NULL,
+  `nombre` varchar(255) NOT NULL,
+  `descripcion` text DEFAULT NULL,
+  `precio` decimal(10,2) NOT NULL,
+  `stock` int NOT NULL DEFAULT 0,
+  `categoria` varchar(100) DEFAULT NULL,
+  `codigo_barras` varchar(100) DEFAULT NULL,
+  `activo` tinyint(1) DEFAULT 1,
+  `updated_by` char(36) DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `ventas` (
+  `id` char(36) NOT NULL,
+  `usuario_id` char(36) DEFAULT NULL,
+  `total` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `fecha_venta` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `metodo_pago` varchar(50) DEFAULT NULL,
+  `activa` tinyint(1) DEFAULT 1,
+  PRIMARY KEY (`id`),
+  KEY `idx_usuario_id` (`usuario_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `detalles_venta` (
+  `id` char(36) NOT NULL,
+  `venta_id` char(36) NOT NULL,
+  `producto_id` char(36) NOT NULL,
+  `cantidad` int NOT NULL,
+  `precio_unitario` decimal(10,2) NOT NULL,
+  `subtotal` decimal(10,2) NOT NULL,
+  `precio_compra` decimal(10,2) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_venta_id` (`venta_id`),
+  KEY `idx_producto_id` (`producto_id`),
+  FOREIGN KEY (`venta_id`) REFERENCES `ventas`(`id`) ON DELETE CASCADE,
+  FOREIGN KEY (`producto_id`) REFERENCES `productos`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+CREATE TABLE IF NOT EXISTS `historial_productos` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `producto_id` char(36) DEFAULT NULL,
+  `usuario_id` char(36) DEFAULT NULL,
+  `accion` varchar(50) DEFAULT NULL,
+  `fecha` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+DELIMITER $$
+CREATE TRIGGER IF NOT EXISTS `reducir_stock`
+AFTER INSERT ON `detalles_venta`
+FOR EACH ROW BEGIN
+  UPDATE productos SET stock = stock - NEW.cantidad WHERE id = NEW.producto_id;
+END$$
+
+CREATE TRIGGER IF NOT EXISTS `actualizar_total_venta`
+AFTER INSERT ON `detalles_venta`
+FOR EACH ROW BEGIN
+  UPDATE ventas SET total = (
+    SELECT SUM(subtotal) FROM detalles_venta WHERE venta_id = NEW.venta_id
+  ) WHERE id = NEW.venta_id;
+END$$
+DELIMITER ;

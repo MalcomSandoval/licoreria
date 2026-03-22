@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\VentaController;
+
 
 // 1. RUTA PRINCIPAL
 Route::get('/', [AuthController::class, 'mostrarRegistro']);
@@ -29,3 +31,14 @@ Route::get('/dashboard', [AuthController::class, 'mostrarDashboard'])->middlewar
 Route::get('/ventas', function() { return "Sección de Ventas"; })->name('ventas.index');
 Route::get('/productos', function() { return "Sección de Inventario"; })->name('productos.index'); // <-- ESTA ES LA QUE FALTABA
 Route::get('/reportes', function() { return "Sección de Reportes"; })->name('reportes.index');
+Route::get('/registrar', [AuthController::class, 'mostrarRegistro'])->name('registro.get');
+
+
+// ventas 
+Route::get('/ventas',          [VentaController::class, 'index'])->name('ventas.index');
+Route::post('/ventas',         [VentaController::class, 'store'])->name('ventas.store');
+Route::delete('/ventas/{id}',  [VentaController::class, 'destroy'])->name('ventas.destroy');
+Route::get('/ventas/filtrar',  [VentaController::class, 'filtrar'])->name('ventas.filtrar');
+Route::get('/ventas/{id}/detalle', fn($id) => response()->json(
+    \App\Models\Venta::with(['detalles.producto'])->findOrFail($id)
+))->name('ventas.detalle');

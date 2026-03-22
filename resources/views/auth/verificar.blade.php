@@ -168,6 +168,7 @@
         <span class="text-blue-500 text-xs font-semibold">O</span>
         <div class="flex-1 h-px bg-gradient-to-l from-transparent to-blue-300"></div>
     </div>
+<<<<<<< HEAD
 
     <!-- Re-send Button -->
     <div class="text-center">
@@ -183,6 +184,8 @@
             🔄 Reenviar código <span id="contador-tiempo"></span>
         </button>
     </div>
+=======
+>>>>>>> 4d5b615c2ba8dccec7760086b536c3e796d78f35
 </div>
 
 <!-- Footer -->
