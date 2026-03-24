@@ -11,13 +11,13 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        $hoy = now()->toDateString();
+        $ventasHoy = now()->toDateString();
         $inicioMes = now()->startOfMonth();
         $hace7Dias = now()->subDays(7);
 
         // Métricas principales
-        $ventasHoy = Venta::whereDate('fecha_venta', $hoy)->sum('total');
-        $cantidadHoy = Venta::whereDate('fecha_venta', $hoy)->count();
+        $ventasHoy = Venta::whereDate('fecha_venta', $ventasHoy)->sum('total');
+        $cantidadHoy = Venta::whereDate('fecha_venta', $ventasHoy)->count();
         $totalProductos = Producto::count();
         $productosActivos = Producto::where('activo', 1)->count();
         $stockBajo = Producto::where('stock', '<=', 5)->where('activo', 1)->count();

@@ -20,7 +20,13 @@ class Usuario extends Authenticatable
 
     // Campos que se pueden llenar masivamente
     protected $fillable = [
-        'id', 'nombre', 'correo', 'contrasena', 'rol', 'activo', 'codigo_verificacion'
+        'id',
+        'nombre',
+        'correo',
+        'contrasena',
+        'rol',
+        'activo',
+        'codigo_verificacion'
     ];
 
     // Ocultar la contraseña en las consultas por seguridad
