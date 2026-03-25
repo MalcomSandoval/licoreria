@@ -55,7 +55,9 @@
                 <div class="text-3xl">💰</div>
             </div>
         </div>
-        <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-red-500 hover:scale-105 transition-all">
+                {{-- Tarjeta Stock Bajo --}}
+        <div class="relative group bg-white rounded-xl shadow-lg p-6 border-l-4 border-red-500 hover:scale-105 transition-all cursor-help"
+            onmouseenter="mostrarDetallesStock()">
             <div class="flex items-center justify-between">
                 <div>
                     <h3 class="text-gray-500 text-sm font-medium">Stock Bajo</h3>
@@ -63,14 +65,31 @@
                 </div>
                 <div class="text-3xl">⚠️</div>
             </div>
+            
+            <div id="modal-hover-stock" class="absolute top-full left-0 mt-2 w-64 bg-white border border-gray-200 shadow-2xl rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] p-4">
+                <h4 class="text-xs font-bold text-red-600 uppercase mb-2">Productos Críticos</h4>
+                <ul id="lista-hover-stock" class="text-sm text-gray-700 max-h-40 overflow-y-auto">
+                    <li class="py-1">Cargando...</li>
+                </ul>
+            </div>
         </div>
-        <div class="bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500 hover:scale-105 transition-all">
+
+        {{-- Tarjeta Categorías --}}
+        <div class="relative group bg-white rounded-xl shadow-lg p-6 border-l-4 border-green-500 hover:scale-105 transition-all cursor-help"
+            onmouseenter="mostrarDetallesCategorias()">
             <div class="flex items-center justify-between">
                 <div>
                     <h3 class="text-gray-500 text-sm font-medium">Categorías</h3>
                     <p class="text-2xl font-bold text-gray-900 mt-1">{{ $totalCategorias }}</p>
                 </div>
                 <div class="text-3xl">📋</div>
+            </div>
+
+            <div id="modal-hover-categorias" class="absolute top-full left-0 mt-2 w-48 bg-white border border-gray-200 shadow-2xl rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-[60] p-4">
+                <h4 class="text-xs font-bold text-green-600 uppercase mb-2">En Uso</h4>
+                <ul id="lista-hover-categorias" class="text-sm text-gray-700">
+                    <li class="py-1">Cargando...</li>
+                </ul>
             </div>
         </div>
     </div>
@@ -433,6 +452,57 @@ function mostrarToast(msg, tipo) {
     div.innerHTML = `<div class="flex items-center gap-2"><span>${tipo === 'exito' ? '✅' : '❌'}</span>${msg}</div>`;
     document.body.appendChild(div);
     setTimeout(() => div.remove(), 4000);
+}
+
+let stockCargado = false;
+let categoriasCargadas = false;
+
+async function mostrarDetallesStock() {
+    if (stockCargado) return;
+    const lista = document.getElementById('lista-hover-stock');
+    
+    try {
+        const res = await fetch('/productos/filtrar?stock=bajo');
+        const productos = await res.json();
+        
+        if (productos.length === 0) {
+            lista.innerHTML = '<li class="text-gray-400 italic">Todo en orden</li>';
+        } else {
+            lista.innerHTML = productos.map(p => `
+                <li class="flex justify-between border-b border-gray-50 py-1">
+                    <span>${p.nombre}</span>
+                    <span class="font-bold text-red-600">${p.stock}</span>
+                </li>
+            `).join('');
+        }
+        stockCargado = true;
+    } catch (e) {
+        lista.innerHTML = '<li>Error al cargar</li>';
+    }
+}
+
+async function mostrarDetallesCategorias() {
+    if (categoriasCargadas) return;
+    const lista = document.getElementById('lista-hover-categorias');
+    
+    try {
+       
+        const res = await fetch('/productos/filtrar?estado=activo');
+        const productos = await res.json();
+        
+        
+        const categorias = [...new Set(productos.map(p => p.categoria))];
+        
+        lista.innerHTML = categorias.map(c => `
+            <li class="py-1 flex items-center gap-2">
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                ${c}
+            </li>
+        `).join('');
+        categoriasCargadas = true;
+    } catch (e) {
+        lista.innerHTML = '<li>Error al cargar</li>';
+    }
 }
 </script>
 @endpush

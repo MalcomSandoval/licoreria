@@ -31,15 +31,18 @@ class ProductoController extends Controller
 
     public function store(Request $request)
     {
+        // VALIDACIÓN: No permite nombres duplicados + Mensaje personalizado
         $request->validate([
-            'nombre' => 'required|string|max:255',
+            'nombre' => 'required|string|max:255|unique:productos,nombre',
             'precio' => 'required|numeric|min:0.01',
             'stock' => 'required|integer|min:0',
             'categoria' => 'required|string',
+        ], [
+            'nombre.unique' => 'Este nombre de producto ya está registrado en nuestro sistema o tienes algún error.',
         ]);
 
         Producto::create([
-            'id' => Str::uuid(),
+            'id' => (string) Str::uuid(),
             'nombre' => $request->nombre,
             'descripcion' => $request->descripcion,
             'precio' => $request->precio,
@@ -54,10 +57,13 @@ class ProductoController extends Controller
 
     public function update(Request $request, $id)
     {
+        // VALIDACIÓN AL EDITAR: Ignora el ID actual para que no dé error al guardar sin cambiar el nombre
         $request->validate([
-            'nombre' => 'required|string|max:255',
+            'nombre' => 'required|string|max:255|unique:productos,nombre,' . $id,
             'precio' => 'required|numeric|min:0.01',
             'categoria' => 'required|string',
+        ], [
+            'nombre.unique' => 'Este nombre de producto ya está registrado en nuestro sistema o tienes algún error.',
         ]);
 
         $producto = Producto::findOrFail($id);
