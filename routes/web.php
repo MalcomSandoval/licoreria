@@ -7,7 +7,9 @@ use App\Http\Controllers\ProductoController;
 
 
 // 1. RUTA PRINCIPAL
-Route::get('/', [AuthController::class, 'mostrarRegistro']);
+Route::get('/', function () {
+    return view('Principal'); // Esto busca resources/views/Principal.blade.php
+});
 
 // 2. RUTAS DE REGISTRO Y ACTIVACIÓN
 Route::get('/registro', [AuthController::class, 'mostrarRegistro'])->name('registro.index');
