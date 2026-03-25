@@ -6,6 +6,7 @@ use App\Http\Controllers\VentaController;
 use App\Http\Controllers\ProductoController;
 
 
+
 // 1. RUTA PRINCIPAL
 Route::get('/', function () {
     return view('Principal'); // Esto busca resources/views/Principal.blade.php
@@ -63,3 +64,9 @@ Route::post('/productos', [ProductoController::class, 'store'])->name('productos
 Route::put('/productos/{id}', [ProductoController::class, 'update'])->name('productos.update');
 Route::patch('/productos/{id}/desactivar', [ProductoController::class, 'desactivar'])->name('productos.desactivar');
 Route::patch('/productos/{id}/activar', [ProductoController::class, 'activar'])->name('productos.activar');
+
+
+// pagina principal
+Route::get('/', function () {
+    return view('principal');
+});
