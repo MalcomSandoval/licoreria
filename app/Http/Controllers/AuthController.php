@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Usuario;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Auth; // IMPORTANTE: Esta línea corrige el error de tu imagen
+use Illuminate\Support\Facades\Auth; 
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
@@ -15,6 +15,18 @@ class AuthController extends Controller
     }
 
     public function registrar(Request $request) {
+        // --- VALIDACIÓN CON MENSAJE PERSONALIZADO ---
+        $request->validate([
+            'correo' => 'required|email|unique:usuarios,correo',
+            'nombre' => 'required|string|max:255',
+            'password' => 'required|min:6',
+        ], [
+            // Este es el mensaje que aparecerá si el correo ya existe o hay errores
+            'correo.unique' => 'Este correo ya está registrado en nuestro sistema o tienes algún error.',
+            'required' => 'Este campo es obligatorio.',
+            'min' => 'La contraseña es muy corta o tienes algún error.'
+        ]);
+
         $codigo = rand(100000, 999999);
 
         $usuario = Usuario::create([
@@ -42,14 +54,12 @@ class AuthController extends Controller
     }
 
     public function login(Request $request) {
-        // Credenciales para el intento de login
         $credentials = [
             'correo' => $request->correo,
-            'password' => $request->contrasena, // Laravel buscará 'password' por defecto
-            'activo' => 1 // Solo permite entrar a cuentas activadas
+            'password' => $request->contrasena, 
+            'activo' => 1 
         ];
 
-        // Intentar iniciar sesión
         if (Auth::attempt($credentials)) {
             $request->session()->regenerate();
             return redirect()->route('dashboard'); 
@@ -58,9 +68,6 @@ class AuthController extends Controller
         return back()->with('error', 'Credenciales incorrectas o cuenta no activada.');
     }
 
-    /**
-     * Esta función corrige los errores de "Undefined variable" en tu Dashboard
-     */
     public function mostrarDashboard() {
         $ventasHoy = 0.00; 
         $cantidadHoy = 0;
@@ -70,7 +77,6 @@ class AuthController extends Controller
         $ventasMes = 0.00;
         $transaccionesMes = 0;
 
-        // Colecciones vacías para que los bucles @forelse no fallen
         $ventasRecientes = collect(); 
         $topProductos = collect();
         $metodosPago = collect();
@@ -88,9 +94,6 @@ class AuthController extends Controller
         ));
     }
 
-    /**
-     * Función de Logout corregida
-     */
     public function logout(Request $request) {
         Auth::logout();
         $request->session()->invalidate();
@@ -98,28 +101,18 @@ class AuthController extends Controller
         return redirect('/login');
     }
 
-    /**
-     * Reenviar código de verificación
-     */
     public function reenviarCodigo(Request $request) {
         try {
             $correo = $request->input('correo');
-            
-            // Buscar el usuario por correo
             $usuario = Usuario::where('correo', $correo)->first();
             
             if (!$usuario) {
                 return response()->json(['success' => false, 'message' => 'Usuario no encontrado'], 404);
             }
             
-            // Generar nuevo código
             $codigoNuevo = rand(100000, 999999);
-            
-            // Actualizar el código en la base de datos
             $usuario->update(['codigo_verificacion' => $codigoNuevo]);
             
-            // Retornar success para que el frontend sepa que todo fue bien
-            // El código será enviado automáticamente por EmailJS en el frontend
             return response()->json(['success' => true, 'message' => 'Código reenviado correctamente']);
             
         } catch (\Exception $e) {
