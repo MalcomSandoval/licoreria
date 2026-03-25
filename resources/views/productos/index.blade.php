@@ -11,10 +11,21 @@
             <h1 class="text-3xl font-bold text-[#1e3a8a]">Gestión de Inventario</h1>
             <p class="text-gray-600 mt-1">Administra tus productos y stock</p>
         </div>
-        <button onclick="abrirModal()"
-            class="bg-[#1e3a8a] hover:bg-[#1e2e6b] text-white px-6 py-3 rounded-lg font-medium transition-all hover:scale-105 flex items-center gap-2">
-            <span class="text-xl">+</span> Nuevo Producto
-        </button>
+        <div class="flex items-center gap-4">
+            {{-- Botón BEES Colombia --}}
+            <a href="https://www.mybees.com.co/" target="_blank" 
+               class="bg-white border-2 border-[#f59e0b] text-[#f59e0b] hover:bg-[#f59e0b] hover:text-white px-4 py-3 rounded-lg font-bold transition-all hover:scale-105 flex items-center gap-2 shadow-sm"
+               title="Ir a BEES Colombia">
+                <span class="text-xl">🛒</span>
+                <span class="hidden md:inline">Surtir en BEES</span>
+            </a>
+
+            {{-- Botón Nuevo Producto --}}
+            <button onclick="abrirModal()"
+                class="bg-[#1e3a8a] hover:bg-[#1e2e6b] text-white px-6 py-3 rounded-lg font-medium transition-all hover:scale-105 flex items-center gap-2 shadow-lg">
+                <span class="text-xl">+</span> Nuevo Producto
+            </button>
+        </div>
     </div>
 
     {{-- Estadísticas --}}
