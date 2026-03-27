@@ -26,4 +26,11 @@ class Producto extends Model
         'activo',
         'updated_by'
     ];
+
+    protected $casts = [
+        'precio' => 'decimal:2',
+        'precio_compra' => 'decimal:2',
+        'stock' => 'integer',
+        'activo' => 'boolean',
+    ];
 }

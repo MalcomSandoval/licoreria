@@ -1,9 +1,14 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\VentaController;
 use App\Http\Controllers\ProductoController;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Http\Request;
+use App\Models\Venta;
+use App\Models\Producto;
+use Carbon\Carbon;
 
 // --- 1. RUTAS PÚBLICAS (Cualquiera puede verlas) ---
 Route::get('/', function () {
@@ -27,7 +32,7 @@ Route::post('/reenviar-codigo', [AuthController::class, 'reenviarCodigo'])->name
 Route::middleware(['auth', 'user.active'])->group(function () {
 
     // Dashboard
-    Route::get('/dashboard', [AuthController::class, 'mostrarDashboard'])->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
     // Ventas
     Route::get('/ventas', [VentaController::class, 'index'])->name('ventas.index');
@@ -46,10 +51,27 @@ Route::middleware(['auth', 'user.active'])->group(function () {
     Route::patch('/productos/{id}/desactivar', [ProductoController::class, 'desactivar'])->name('productos.desactivar');
     Route::patch('/productos/{id}/activar', [ProductoController::class, 'activar'])->name('productos.activar');
 
-    // Reportes (Temporal)
+    // Reportes
     Route::get('/reportes', function () {
-        return "Sección de Reportes";
+        return view('reportes.reportes');
     })->name('reportes.index');
+
+    Route::get('/reportes/data', function (Request $request) {
+        $periodo = $request->periodo ?? 7;
+        $fechaLimite = Carbon::now()->subDays($periodo);
+
+        $ventas = Venta::with('detalles.producto')
+            ->where('activa', 1)
+            ->where('fecha_venta', '>=', $fechaLimite)
+            ->get();
+
+        $productos = Producto::all();
+
+        return response()->json([
+            'ventas' => $ventas,
+            'productos' => $productos,
+        ]);
+    })->name('reportes.data');
 
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

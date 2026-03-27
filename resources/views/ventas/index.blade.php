@@ -384,7 +384,7 @@
                 <td class="px-6 py-4 text-sm">${new Date(v.fecha_venta).toLocaleString('es-CO')}</td>
                 <td class="px-6 py-4 font-bold text-[#1e3a8a]">$${parseFloat(v.total).toFixed(2)}</td>
                 <td class="px-6 py-4 capitalize">${v.metodo_pago}</td>
-                <td class="px-6 py-4 text-sm text-gray-600">${v.detalles_venta?.length ?? 0} producto(s)</td>
+                <td class="px-6 py-4 text-sm text-gray-600">${v.detalles?.length ?? 0} producto(s)</td>
                 <td class="px-6 py-4 text-center">
                     <div class="flex justify-center gap-2">
                         <button onclick="verDetalle('${v.id}')" class="bg-[#1e3a8a] hover:bg-[#1e2e6b] text-white px-3 py-1 rounded text-sm">Ver</button>

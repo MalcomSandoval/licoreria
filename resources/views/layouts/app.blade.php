@@ -75,13 +75,15 @@
                 <div class="flex items-center gap-4">
                     <div class="text-right">
                         <p class="text-sm text-gray-600">Bienvenido,</p>
-                        <p class="font-semibold text-[#1e3a8a]">Administrador</p>
+                        <p class="font-semibold text-[#1e3a8a]">{{ auth()->user()->nombre ?? 'Usuario' }}</p>
                     </div>
-                    {{-- la ruta del index --}}
-                    <a href="/"
-                        class="bg-[#f59e0b] hover:bg-yellow-500 text-white px-4 py-2 rounded-lg transition-colors text-sm">
-                        Cerrar Sesión
-                    </a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit"
+                            class="bg-[#f59e0b] hover:bg-yellow-500 text-white px-4 py-2 rounded-lg transition-colors text-sm">
+                            Cerrar Sesión
+                        </button>
+                    </form>
                 </div>
             </nav>
 

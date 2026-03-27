@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use App\Models\Venta;
 use App\Models\Producto;
@@ -52,11 +53,13 @@ class VentaController extends Controller
             $ventaId = Str::uuid();
             $venta = Venta::create([
                 'id'          => $ventaId,
-                'usuario_id'  => null,
+                'usuario_id'  => Auth::id(),
                 'total'       => 0,
                 'metodo_pago' => $request->metodo_pago,
                 'activa'      => 1,
             ]);
+
+            $totalVenta = 0;
 
             foreach ($request->items as $item) {
                 $producto = Producto::findOrFail($item['producto_id']);
@@ -68,28 +71,56 @@ class VentaController extends Controller
                     ], 422);
                 }
 
+                $subtotal = $item['cantidad'] * $item['precio_unitario'];
+
                 DetalleVenta::create([
                     'id'              => Str::uuid(),
                     'venta_id'        => $ventaId,
                     'producto_id'     => $item['producto_id'],
                     'cantidad'        => $item['cantidad'],
                     'precio_unitario' => $item['precio_unitario'],
-                    'subtotal'        => $item['cantidad'] * $item['precio_unitario'],
+                    'subtotal'        => $subtotal,
+                    'precio_compra'   => $producto->precio_compra ?? 0,
                 ]);
+
+                $producto->decrement('stock', $item['cantidad']);
+                $totalVenta += $subtotal;
             }
 
+            $venta->update(['total' => $totalVenta]);
+
             DB::commit();
-            return response()->json(['success' => true, 'venta_id' => $ventaId]);
+            return response()->json([
+                'success' => true,
+                'venta_id' => $ventaId,
+                'total' => $totalVenta,
+            ]);
 
         } catch (\Exception $e) {
             DB::rollBack();
-            return response()->json(['error' => 'Error al procesar la venta'], 500);
+            return response()->json([
+                'error' => 'Error al procesar la venta',
+                'message' => $e->getMessage(),
+            ], 500);
         }
     }
 
     public function destroy($id)
     {
-        Venta::where('id', $id)->update(['activa' => 0]);
+        $venta = Venta::with('detalles')->findOrFail($id);
+
+        if (!$venta->activa) {
+            return response()->json(['success' => true]);
+        }
+
+        DB::transaction(function () use ($venta) {
+            foreach ($venta->detalles as $detalle) {
+                Producto::where('id', $detalle->producto_id)->increment('stock', $detalle->cantidad);
+            }
+
+            $venta->update(['activa' => 0]);
+        });
+
         return response()->json(['success' => true]);
     }
 
