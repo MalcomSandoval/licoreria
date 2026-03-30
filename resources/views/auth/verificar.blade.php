@@ -1,5 +1,7 @@
 @extends('layouts.auth')
 
+@section('title', 'Verificar Cuenta')
+
 @section('content')
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
     <script>
@@ -55,7 +57,7 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                    'X-CSRF-TOKEN': "{{ csrf_token() }}"
                 },
                 body: JSON.stringify({
                     correo: correo
@@ -65,7 +67,6 @@
                 .then(data => {
                     if (data.success) {
                         // Ahora enviar el nuevo código por EmailJS
-                        // El código nuevamente será generado entre 100000-999999 en el backend
                         emailjs.send('service_al7vroi', 'template_u9ydqpc', {
                             user_email: correo,
                             codigo_verificacion: "Por favor revisa tu email para el nuevo código"
@@ -105,85 +106,67 @@
         }
     </script>
 
-    <!-- Header con Logo -->
-    <div class="text-center mb-6 sm:mb-8">
-        <div class="flex justify-center mb-4">
-            <div
-                class="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg shadow-2xl flex items-center justify-center transform hover:scale-105 transition">
-                <span class="text-2xl sm:text-3xl">✓</span>
-            </div>
-        </div>
-        <h1
-            class="text-2xl sm:text-3xl lg:text-4xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-blue-500 to-blue-700 mb-2">
-            Punto frio donde beto</h1>
-        <p class="text-blue-600 text-xs sm:text-sm tracking-widest font-semibold">Verificar Cuenta</p>
+    <div class="text-center mb-8">
+        <h2 class="text-2xl sm:text-3xl font-bold text-white tracking-tight mb-3">Verifica tu Cuenta</h2>
+        <p class="text-app-textMuted text-sm">Hemos enviado un código de verificación a:</p>
+        <p class="text-app-primary font-semibold text-sm mt-1 bg-app-primary/10 inline-block px-3 py-1 rounded-lg border border-app-primary/20">{{ $correo }}</p>
     </div>
 
-    <!-- Form Container -->
-    <div class="bg-gradient-to-b from-white to-blue-50 rounded-2xl shadow-2xl border border-blue-200 p-6 sm:p-8 space-y-6">
-        <div class="text-center mb-6">
-            <h2 class="text-xl sm:text-2xl font-bold text-blue-900 mb-3">Verifica tu Cuenta</h2>
-            <p class="text-slate-600 text-sm">Hemos enviado un código de verificación a:</p>
-            <p class="text-blue-600 font-semibold text-sm mt-1">{{ $correo }}</p>
-        </div>
-
-        <!-- Notificación de código enviado -->
-        <div id="notificacion-enviada"
-            class="hidden bg-green-50 border border-green-300 text-green-700 px-4 py-3 rounded-lg flex items-start gap-3 animate-pulse">
-            <span class="text-xl">✅</span>
-            <p class="text-sm">Código de verificación enviado correctamente</p>
-        </div>
-
-        <form action="{{ route('activar.post') }}" method="POST" class="space-y-6">
-            @csrf
-            <input type="hidden" name="correo" value="{{ $correo }}">
-
-            <!-- Codigo Input -->
-            <div class="group">
-                <label class="block text-blue-700 text-sm font-semibold mb-2 ml-1">🔐 Código de Verificación</label>
-                <div class="relative">
-                    <input type="text" name="codigo" required maxlength="6" inputmode="numeric"
-                        class="w-full px-4 py-3 bg-white border-2 border-blue-300 rounded-lg text-slate-900 placeholder-slate-400 focus:outline-none focus:border-blue-600 focus:bg-blue-50 transition duration-200 text-center text-2xl tracking-widest font-bold"
-                        placeholder="000000">
-                    <span class="absolute right-3 top-3 text-blue-500">✓</span>
-                </div>
-                <p class="text-slate-500 text-xs mt-2 ml-1">Ingresa los 6 dígitos del código</p>
-                @error('codigo')
-                    <p class="text-red-600 text-xs mt-1 ml-1">{{ $message }}</p>
-                @enderror
-            </div>
-
-            <!-- Submit Button -->
-            <button type="submit"
-                class="w-full py-3 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold rounded-lg shadow-lg hover:shadow-2xl transform hover:scale-105 transition duration-200 text-lg tracking-wide">
-                🚀 Verificar Cuenta
-            </button>
-        </form>
-
-        <!-- Divider -->
-        <div class="flex items-center gap-4 my-6">
-            <div class="flex-1 h-px bg-gradient-to-r from-transparent to-blue-300"></div>
-            <span class="text-blue-500 text-xs font-semibold">O</span>
-            <div class="flex-1 h-px bg-gradient-to-l from-transparent to-blue-300"></div>
-        </div>
-
-
-        <!-- Re-send Button -->
-        <div class="text-center">
-            <p class="text-slate-600 text-xs sm:text-sm mb-3">
-                ¿No recibiste el código?
-            </p>
-            <button id="btn-reenviar" type="button" onclick="reenviarCodigo()"
-                class="px-6 py-2 bg-gradient-to-r from-blue-400 to-blue-500 hover:from-blue-500 hover:to-blue-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition duration-200 text-sm inline-flex items-center gap-2">
-                🔄 Reenviar código <span id="contador-tiempo"></span>
-            </button>
-        </div>
-
+    <!-- Notificación de código enviado -->
+    <div id="notificacion-enviada" class="hidden bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 px-4 py-3 rounded-xl flex items-start gap-3 mb-6 animate-pulse">
+        <span class="text-xl">✨</span>
+        <p class="text-sm pt-0.5">Código de verificación enviado correctamente a tu correo.</p>
     </div>
 
-    <!-- Footer -->
-    <div class="text-center mt-8 text-slate-500 text-xs">
-        <p>© 2026 Punto frio donde beto - Sistema de Punto de Venta</p>
-        <p class="text-blue-600 mt-2 font-semibold">🍺 Vinos • Licores • Bebidas Destiladas</p>
+    <form action="{{ route('activar.post') }}" method="POST" class="space-y-6">
+        @csrf
+        <input type="hidden" name="correo" value="{{ $correo }}">
+
+        <!-- Codigo Input -->
+        <div class="group">
+            <label class="block text-app-textMuted text-sm font-medium mb-3 pl-1 text-center">🔐 Ingresa tu Código de 6 Dígitos</label>
+            <div class="relative max-w-xs mx-auto">
+                <input 
+                    type="text" 
+                    name="codigo" 
+                    required 
+                    maxlength="6" 
+                    inputmode="numeric"
+                    class="w-full px-4 py-4 bg-app-bg/80 border border-app-accent rounded-xl text-white placeholder-app-textMuted/30 focus:outline-none focus:border-app-primary focus:ring-2 focus:ring-app-primary/50 transition duration-200 text-center text-3xl tracking-[0.5em] font-bold shadow-inner"
+                    placeholder="000000"
+                >
+            </div>
+            @error('codigo')
+                <p class="text-red-400 text-xs mt-2 text-center">{{ $message }}</p>
+            @enderror
+        </div>
+
+        <!-- Submit Button -->
+        <button 
+            type="submit"
+            class="w-full py-3.5 mt-4 bg-app-primary hover:bg-app-primaryHover text-slate-900 font-bold rounded-xl shadow-[0_0_20px_rgba(245,158,11,0.3)] hover:shadow-[0_0_25px_rgba(245,158,11,0.5)] transform hover:-translate-y-0.5 transition duration-200 text-lg flex items-center justify-center gap-2"
+        >
+            <span>Verificar Cuenta</span>
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+        </button>
+    </form>
+
+    <!-- Divider -->
+    <div class="flex items-center gap-4 my-8">
+        <div class="flex-1 h-px bg-app-accent/50"></div>
+    </div>
+
+    <!-- Re-send Button -->
+    <div class="text-center">
+        <p class="text-app-textMuted text-sm mb-4">¿No recibiste el código o expiró?</p>
+        <button 
+            id="btn-reenviar" 
+            type="button" 
+            onclick="reenviarCodigo()"
+            class="px-6 py-2.5 bg-app-bg/50 border border-app-accent hover:border-app-primary/50 text-app-textMuted hover:text-white font-medium rounded-xl shadow-sm transition duration-200 text-sm inline-flex items-center gap-2 group"
+        >
+            <svg class="w-4 h-4 text-app-primary group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+            Reenviar código <span id="contador-tiempo" class="text-app-primary ml-1"></span>
+        </button>
     </div>
 @endsection
