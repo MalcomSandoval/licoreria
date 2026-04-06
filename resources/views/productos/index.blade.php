@@ -492,15 +492,30 @@ async function guardarProducto() {
             method,
             headers: {
                 'Content-Type': 'application/json',
+                'Accept': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
             },
             body: JSON.stringify(data)
         });
-        const result = await res.json();
-        if (result.success) {
+
+        let result;
+        try {
+            result = await res.json();
+        } catch (parseError) {
+            mostrarMsgForm('Error inesperado del servidor (respuesta inválida)', 'error');
+            document.getElementById('btn-texto').textContent = btnTextOriginal;
+            return;
+        }
+
+        if (res.ok && result.success) {
             mostrarToast(productoEditandoId ? 'Producto actualizado' : 'Producto registrado exitosamente', 'exito');
             cerrarModal();
             setTimeout(() => location.reload(), 800);
+        } else if (res.status === 422 && result.errors) {
+            // Errores de validación de Laravel
+            const primerError = Object.values(result.errors)[0][0];
+            mostrarMsgForm(primerError, 'error');
+            document.getElementById('btn-texto').textContent = btnTextOriginal;
         } else {
             mostrarMsgForm(result.message ?? 'Error al guardar en base de datos', 'error');
             document.getElementById('btn-texto').textContent = btnTextOriginal;

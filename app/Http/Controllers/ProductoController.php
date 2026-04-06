@@ -60,7 +60,7 @@ class ProductoController extends Controller
     {
         // VALIDACIÓN AL EDITAR: Ignora el ID actual para que no dé error al guardar sin cambiar el nombre
         $request->validate([
-            'nombre' => 'required|string|max:255|unique:productos,nombre,' . $id,
+            'nombre' => 'required|string|max:255|unique:productos,nombre,' . $id . ',id',
             'precio' => 'required|numeric|min:0.01',
             'categoria' => 'required|string',
         ], [
