@@ -359,11 +359,12 @@
             existente.subtotal = nueva * existente.precio_unitario;
         } else {
             carrito.push({
-                producto_id: productoSeleccionado.id,
-                nombre: productoSeleccionado.nombre,
+                producto_id:    productoSeleccionado.id,
+                nombre:         productoSeleccionado.nombre,
                 precio_unitario: parseFloat(productoSeleccionado.precio),
-                cantidad: cantidad,
-                subtotal: cantidad * parseFloat(productoSeleccionado.precio)
+                precio_compra:   parseFloat(productoSeleccionado.precio_compra ?? 0), // guardar para cálculo de utilidad
+                cantidad:       cantidad,
+                subtotal:       cantidad * parseFloat(productoSeleccionado.precio)
             });
         }
 

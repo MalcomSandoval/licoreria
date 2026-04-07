@@ -57,18 +57,32 @@ Route::middleware(['auth', 'user.active'])->group(function () {
     })->name('reportes.index');
 
     Route::get('/reportes/data', function (Request $request) {
-        $periodo = $request->periodo ?? 7;
+        $periodo    = (int) ($request->periodo ?? 7);
         $fechaLimite = Carbon::now()->subDays($periodo);
 
         $ventas = Venta::with('detalles.producto')
             ->where('activa', 1)
             ->where('fecha_venta', '>=', $fechaLimite)
-            ->get();
+            ->get()
+            ->map(function ($venta) {
+                // Forzar campos numericos de la venta a tipos correctos
+                $venta->total         = (float) $venta->total;
+                $venta->precio_compra = (float) ($venta->precio_compra ?? 0);
+
+                $venta->detalles->transform(function ($d) {
+                    $d->precio_unitario = (float) $d->precio_unitario;
+                    $d->precio_compra   = (float) ($d->precio_compra ?? 0);
+                    $d->subtotal        = (float) $d->subtotal;
+                    $d->cantidad        = (int)   $d->cantidad;
+                    return $d;
+                });
+                return $venta;
+            });
 
         $productos = Producto::all();
 
         return response()->json([
-            'ventas' => $ventas,
+            'ventas'    => $ventas,
             'productos' => $productos,
         ]);
     })->name('reportes.data');

@@ -52,14 +52,16 @@ class VentaController extends Controller
         try {
             $ventaId = Str::uuid();
             $venta = Venta::create([
-                'id'          => $ventaId,
-                'usuario_id'  => Auth::id(),
-                'total'       => 0,
-                'metodo_pago' => $request->metodo_pago,
-                'activa'      => 1,
+                'id'            => $ventaId,
+                'usuario_id'    => Auth::id(),
+                'total'         => 0,
+                'precio_compra' => 0,
+                'metodo_pago'   => $request->metodo_pago,
+                'activa'        => 1,
             ]);
 
             $totalVenta = 0;
+            $totalCosto = 0; // suma de precio_compra × cantidad de todos los items
 
             foreach ($request->items as $item) {
                 $producto = Producto::findOrFail($item['producto_id']);
@@ -73,6 +75,11 @@ class VentaController extends Controller
 
                 $subtotal = $item['cantidad'] * $item['precio_unitario'];
 
+                // Precio de compra: viene del frontend (ya actualizado) o de la BD como fallback
+                $precioCompraItem = isset($item['precio_compra']) && $item['precio_compra'] > 0
+                    ? (float) $item['precio_compra']
+                    : (float) ($producto->precio_compra ?? 0);
+
                 DetalleVenta::create([
                     'id'              => Str::uuid(),
                     'venta_id'        => $ventaId,
@@ -80,14 +87,18 @@ class VentaController extends Controller
                     'cantidad'        => $item['cantidad'],
                     'precio_unitario' => $item['precio_unitario'],
                     'subtotal'        => $subtotal,
-                    'precio_compra'   => $producto->precio_compra ?? 0,
+                    'precio_compra'   => $precioCompraItem,
                 ]);
 
                 $producto->decrement('stock', $item['cantidad']);
                 $totalVenta += $subtotal;
+                $totalCosto += $precioCompraItem * $item['cantidad']; // acumular costo total
             }
 
-            $venta->update(['total' => $totalVenta]);
+            $venta->update([
+                'total'         => $totalVenta,
+                'precio_compra' => $totalCosto,  // costo total de la venta
+            ]);
 
             DB::commit();
             return response()->json([

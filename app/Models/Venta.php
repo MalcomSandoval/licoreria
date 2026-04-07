@@ -18,15 +18,17 @@ class Venta extends Model
         'id',
         'usuario_id',
         'total',
+        'precio_compra',
         'fecha_venta',
         'metodo_pago',
         'activa'
     ];
 
     protected $casts = [
-        'total' => 'decimal:2',
-        'fecha_venta' => 'datetime',
-        'activa' => 'boolean',
+        'total'         => 'decimal:2',
+        'precio_compra' => 'decimal:2',
+        'fecha_venta'   => 'datetime',
+        'activa'        => 'boolean',
     ];
 
     public function detalles()

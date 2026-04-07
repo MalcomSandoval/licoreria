@@ -66,10 +66,10 @@
                     <div class="bg-emerald-500/10 p-2 rounded-lg text-emerald-400">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
                     </div>
-                    <h3 class="text-app-textMuted text-xs font-bold uppercase tracking-wider">Utilidad (30%)</h3>
+                    <h3 class="text-app-textMuted text-xs font-bold uppercase tracking-wider">Utilidad Real</h3>
                 </div>
                 <h2 id="ganancia" class="text-2xl sm:text-3xl font-black text-white group-hover:text-emerald-400 transition-colors">$0.00</h2>
-                <p class="text-[10px] text-app-textMuted mt-1">Margen estimado de ganancia</p>
+                <p class="text-[10px] text-app-textMuted mt-1">Precio venta − precio compra (BD)</p>
             </div>
 
             <div class="bg-gradient-to-br from-app-card to-app-bg border border-app-accent/50 rounded-2xl p-5 shadow-lg relative overflow-hidden group">
@@ -115,8 +115,9 @@
                             <th class="px-6 py-4 font-semibold w-16 text-center">#</th>
                             <th class="px-6 py-4 font-semibold">Producto</th>
                             <th class="px-6 py-4 font-semibold text-center">Unidades Vendidas</th>
-                            <th class="px-6 py-4 font-semibold text-right">Contribución (Ingreso)</th>
-                            <th class="px-6 py-4 font-semibold text-center hidden sm:table-cell">% Crecimiento</th>
+                            <th class="px-6 py-4 font-semibold text-right">Ingreso Total</th>
+                            <th class="px-6 py-4 font-semibold text-right hidden sm:table-cell">Utilidad Real</th>
+                            <th class="px-6 py-4 font-semibold text-center hidden sm:table-cell">Margen %</th>
                         </tr>
                     </thead>
                     <tbody id="tabla" class="divide-y divide-app-accent/30 text-sm">
@@ -155,46 +156,59 @@
     }
 
     function procesar() {
-        let totalVentas = 0;
+        let totalVentas   = 0;
         let totalProductos = 0;
+        let totalUtilidad = 0;  // suma de (total venta - precio_compra venta)
         const mapa = {};
 
         datos.ventas.forEach(venta => {
-            totalVentas += parseFloat(venta.total);
+            const ingresoVenta = parseFloat(venta.total ?? 0);
+            const costoVenta   = parseFloat(venta.precio_compra ?? 0); // campo directo de tabla ventas
+
+            totalVentas   += ingresoVenta;
+            totalUtilidad += (ingresoVenta - costoVenta); // utilidad real de esta venta
 
             venta.detalles.forEach(detalle => {
                 totalProductos += detalle.cantidad;
                 const nombre = detalle.producto?.nombre || 'Producto Eliminado / N/A';
 
+                const precioVenta   = detalle.precio_unitario;
+                const precioCompra  = detalle.precio_compra;
+                const cantidad      = detalle.cantidad;
+                const utilidadItem  = (precioVenta - precioCompra) * cantidad;
+
                 if (!mapa[nombre]) {
-                    mapa[nombre] = { cantidad: 0, ingresos: 0 };
+                    mapa[nombre] = { cantidad: 0, ingresos: 0, utilidad: 0, costo: 0 };
                 }
 
-                mapa[nombre].cantidad += detalle.cantidad;
-                mapa[nombre].ingresos += parseFloat(detalle.subtotal);
+                mapa[nombre].cantidad  += cantidad;
+                mapa[nombre].ingresos  += parseFloat(detalle.subtotal ?? 0);
+                mapa[nombre].utilidad  += utilidadItem;
+                mapa[nombre].costo     += precioCompra * cantidad;
             });
         });
 
         const promedio = datos.ventas.length ? totalVentas / datos.ventas.length : 0;
-        const ganancia = totalVentas * 0.3;
 
-        // Animar contadores simples (opcional pero visualmente atractivo)
-        document.getElementById('ventas').innerText = `$${totalVentas.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits:2})}`;
-        document.getElementById('ganancia').innerText = `$${ganancia.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits:2})}`;
+        document.getElementById('ventas').innerText   = `$${totalVentas.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits:2})}`;
+        document.getElementById('ganancia').innerText = `$${totalUtilidad.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits:2})}`;
         document.getElementById('promedio').innerText = `$${promedio.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits:2})}`;
         document.getElementById('productos').innerText = totalProductos;
 
-        const tabla = Object.entries(mapa).sort((a, b) => b[1].ingresos - a[1].ingresos);
+        const tabla = Object.entries(mapa).sort((a, b) => b[1].utilidad - a[1].utilidad);
 
         const tbody = document.getElementById('tabla');
         if (tabla.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-12 text-center text-app-textMuted bg-app-bg/20"><div class="text-4xl mb-3 opacity-30">📊</div><p>No hay datos estadísticos para este periodo</p></td></tr>`;
+            tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-app-textMuted bg-app-bg/20"><div class="text-4xl mb-3 opacity-30">📊</div><p>No hay datos estadísticos para este periodo</p></td></tr>`;
         } else {
             tbody.innerHTML = tabla.map(([nombre, detalle], index) => {
-                
-                // Un pseudo % de crecimiento aleatorio o fijo solo visual, ya que no tenemos datas pasadas en este punto
-                const fakeGrowth = Math.floor(Math.random() * 20) + (index < 3 ? 10 : -5); 
-                const isPositive = fakeGrowth >= 0;
+
+                // Margen real = utilidad / ingreso * 100
+                const margenPct = detalle.ingresos > 0
+                    ? (detalle.utilidad / detalle.ingresos * 100)
+                    : 0;
+                const margenPositivo = margenPct >= 0;
+                const sinCosto = detalle.costo === 0; // aviso: precio_compra no fue registrado
 
                 return `
                 <tr class="hover:bg-app-bg/50 transition-colors">
@@ -208,17 +222,26 @@
                         <span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded text-xs font-bold">${detalle.cantidad}</span>
                     </td>
                     <td class="px-6 py-4 text-right">
-                        <span class="font-bold text-emerald-400">$${detalle.ingresos.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits:2})}</span>
+                        <span class="font-bold text-white">$${detalle.ingresos.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits:2})}</span>
+                    </td>
+                    <td class="px-6 py-4 text-right hidden sm:table-cell">
+                        ${sinCosto
+                            ? `<span class="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">Sin precio compra</span>`
+                            : `<span class="font-bold ${detalle.utilidad >= 0 ? 'text-emerald-400' : 'text-red-400'}">$${detalle.utilidad.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits:2})}</span>`
+                        }
                     </td>
                     <td class="px-6 py-4 text-center hidden sm:table-cell">
-                        <span class="text-xs font-semibold ${isPositive ? 'text-emerald-400 bg-emerald-500/10' : 'text-red-400 bg-red-500/10'} px-2 py-1 rounded-lg flex items-center justify-center gap-1 w-max mx-auto">
-                            ${isPositive ? '↑' : '↓'} ${Math.abs(fakeGrowth)}%
-                        </span>
+                        ${sinCosto
+                            ? `<span class="text-xs text-app-textMuted">—</span>`
+                            : `<span class="text-xs font-semibold ${margenPositivo ? 'text-emerald-400 bg-emerald-500/10' : 'text-red-400 bg-red-500/10'} px-2 py-1 rounded-lg flex items-center justify-center gap-1 w-max mx-auto">
+                                ${margenPositivo ? '↑' : '↓'} ${Math.abs(margenPct).toFixed(1)}%
+                              </span>`
+                        }
                     </td>
                 </tr>
             `}).join('');
         }
-        
+
         document.getElementById('table-loader').classList.add('hidden');
     }
 
