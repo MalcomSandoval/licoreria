@@ -58,7 +58,11 @@
         <div class="w-fulltext-center mb-8 flex flex-col items-center justify-center">
             <a href="{{ route('principal') }}" class="group">
                 <div class="w-20 h-20 bg-app-card border border-app-accent rounded-2xl flex items-center justify-center shadow-xl shadow-app-primary/10 mb-4 transform rotate-3 transition-transform hover:scale-110 active:scale-95">
-                    <span class="text-4xl">🧊</span>
+        
+                <span class="text-4xl animate-bounce">
+                             🧊
+                </span>
+
                 </div>
             </a>
             <h1 class="text-3xl font-bold tracking-tight">Punto <span class="text-app-primary">Frío</span></h1>
