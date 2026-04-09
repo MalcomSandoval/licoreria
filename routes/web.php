@@ -23,6 +23,12 @@ Route::get('/login', function () {
 
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
+// Rutas para recuperar contraseña (Públicas)
+Route::get('/recuperar-password', [AuthController::class, 'mostrarRecuperar'])->name('password.request');
+Route::post('/enviar-codigo-recuperacion', [AuthController::class, 'enviarCodigoRecuperacion'])->name('password.email');
+Route::get('/restablecer-password/{correo}', [AuthController::class, 'mostrarRestablecer'])->name('password.reset');
+Route::post('/confirmar-restablecer', [AuthController::class, 'confirmarRestablecer'])->name('password.update.public');
+
 // Registro y Activación
 // Registro y Activación
 Route::get('/registro', [AuthController::class, 'mostrarRegistro'])->name('registro.index');
@@ -88,6 +94,10 @@ Route::middleware(['auth', 'user.active'])->group(function () {
             'productos' => $productos,
         ]);
     })->name('reportes.data');
+    
+    // --- CAMBIO DE CONTRASEÑA ---
+    Route::get('/cambiar-password', [AuthController::class, 'mostrarCambiarPassword'])->name('password.edit');
+    Route::put('/cambiar-password', [AuthController::class, 'actualizarPassword'])->name('password.update');
 
     // Logout
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

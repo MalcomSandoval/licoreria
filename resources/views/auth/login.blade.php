@@ -53,7 +53,9 @@
                 >
             </div>
             <div class="flex justify-end mt-2">
-                <a href="#" class="text-xs text-app-primary hover:text-app-primaryHover transition-colors">¿Olvidaste tu contraseña?</a>
+                <a href="{{ route('password.request') }}" class="text-xs text-app-primary hover:text-app-primaryHover transition-colors">
+                    ¿Olvidaste tu contraseña?
+                </a>
             </div>
         </div>
 
