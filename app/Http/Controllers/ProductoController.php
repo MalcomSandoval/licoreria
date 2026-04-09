@@ -31,12 +31,12 @@ class ProductoController extends Controller
 
     public function store(Request $request)
     {
-        // VALIDACIÓN: No permite nombres duplicados + Mensaje personalizado
         $request->validate([
             'nombre' => 'required|string|max:255|unique:productos,nombre',
             'precio' => 'required|numeric|min:0.01',
             'stock' => 'required|integer|min:0',
             'categoria' => 'required|string',
+            'cantidad_caja' => 'nullable|integer|min:1', // Validación añadida
         ], [
             'nombre.unique' => 'Este nombre de producto ya está registrado en nuestro sistema o tienes algún error.',
         ]);
@@ -48,6 +48,7 @@ class ProductoController extends Controller
             'precio' => $request->precio,
             'precio_compra' => $request->precio_compra ?? 0,
             'stock' => $request->stock,
+            'cantidad_caja' => $request->cantidad_caja, // Guardar nuevo campo
             'categoria' => $request->categoria,
             'codigo_barras' => $request->codigo_barras,
             'activo' => 1,
@@ -58,11 +59,11 @@ class ProductoController extends Controller
 
     public function update(Request $request, $id)
     {
-        // VALIDACIÓN AL EDITAR: Ignora el ID actual para que no dé error al guardar sin cambiar el nombre
         $request->validate([
             'nombre' => 'required|string|max:255|unique:productos,nombre,' . $id . ',id',
             'precio' => 'required|numeric|min:0.01',
             'categoria' => 'required|string',
+            'cantidad_caja' => 'nullable|integer|min:1', // Validación añadida
         ], [
             'nombre.unique' => 'Este nombre de producto ya está registrado en nuestro sistema o tienes algún error.',
         ]);
@@ -76,6 +77,7 @@ class ProductoController extends Controller
             'precio' => $request->precio,
             'precio_compra' => $request->precio_compra ?? $producto->precio_compra,
             'stock' => $nuevoStock,
+            'cantidad_caja' => $request->cantidad_caja, // Actualizar nuevo campo
             'categoria' => $request->categoria,
             'codigo_barras' => $request->codigo_barras,
         ]);

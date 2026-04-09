@@ -21,6 +21,7 @@ class Producto extends Model
         'precio',
         'precio_compra',
         'stock',
+        'cantidad_caja',
         'categoria',
         'codigo_barras',
         'activo',
@@ -31,6 +32,7 @@ class Producto extends Model
         'precio' => 'decimal:2',
         'precio_compra' => 'decimal:2',
         'stock' => 'integer',
+        'cantidad_caja' => 'integer', // <-- Agregado para castear a entero
         'activo' => 'boolean',
     ];
 }

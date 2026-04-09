@@ -85,7 +85,9 @@
             <div class="mb-8 p-4 sm:p-6 bg-app-bg rounded-xl border border-app-accent/50 shadow-inner">
                 <h4 class="text-sm font-semibold text-app-textMuted uppercase tracking-wider mb-4">Agregar Producto</h4>
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-                    <div class="md:col-span-8 relative">
+                    
+                    {{-- Buscador --}}
+                    <div class="md:col-span-6 relative">
                         <label class="block text-xs text-app-textMuted mb-2">Buscar (Nombre o Código)</label>
                         <div class="relative">
                             <input type="text" id="buscar-producto"
@@ -102,13 +104,25 @@
                         </div>
                     </div>
                     
+                    {{-- Nuevo Input: Tipo de Venta --}}
+                    <div class="md:col-span-2">
+                        <label class="block text-xs text-app-textMuted mb-2">Tipo</label>
+                        <select id="tipo-venta" 
+                            class="w-full px-3 py-3 bg-app-card border border-app-accent rounded-xl text-white focus:outline-none focus:border-emerald-500 transition shadow-sm cursor-pointer appearance-none">
+                            <option value="unidad">Unidad</option>
+                            <option value="caja">Caja</option>
+                        </select>
+                    </div>
+
+                    {{-- Cantidad --}}
                     <div class="md:col-span-2">
                         <label class="block text-xs text-app-textMuted mb-2">Cantidad</label>
                         <input type="number" id="cantidad-producto" min="1" value="1"
-                            class="w-full px-4 py-3 bg-app-card border border-app-accent rounded-xl text-whitetext-center focus:outline-none focus:border-emerald-500 transition shadow-sm"
-                            placeholder="Qty">
+                            class="w-full px-4 py-3 bg-app-card border border-app-accent rounded-xl text-white text-center focus:outline-none focus:border-emerald-500 transition shadow-sm"
+                            placeholder="1">
                     </div>
                     
+                    {{-- Botón --}}
                     <div class="md:col-span-2">
                         <button type="button" onclick="agregarAlCarrito()"
                             class="w-full bg-emerald-500/20 hover:bg-emerald-500 text-emerald-400 hover:text-white border border-emerald-500/50 py-3 px-4 rounded-xl font-bold transition-all shadow-sm flex justify-center items-center h-[50px]">
@@ -126,8 +140,10 @@
                             <thead>
                                 <tr class="bg-app-card text-app-textMuted text-xs uppercase tracking-wider border-b border-app-accent">
                                     <th class="px-4 py-3 text-left font-semibold">Producto</th>
-                                    <th class="px-4 py-3 text-left font-semibold">Precio</th>
-                                    <th class="px-4 py-3 text-center font-semibold text-white">Cantidad</th>
+                                    <th class="px-4 py-3 text-left font-semibold">Precio Unit.</th>
+                                    {{-- Nueva columna para mostrar "X unidades por caja" --}}
+                                    <th class="px-4 py-3 text-center font-semibold text-emerald-400">Empaque</th> 
+                                    <th class="px-4 py-3 text-center font-semibold text-white">Cantidad Total</th>
                                     <th class="px-4 py-3 text-right font-semibold">Subtotal</th>
                                     <th class="px-4 py-3 text-center w-16"></th>
                                 </tr>
@@ -135,7 +151,7 @@
                             <tbody id="carrito-items" class="divide-y divide-app-accent/30 text-sm"></tbody>
                             <tfoot>
                                 <tr class="bg-emerald-500/10 border-t border-emerald-500/30">
-                                    <td colspan="3" class="px-4 py-5 font-bold text-right text-emerald-100 uppercase tracking-widest text-sm">Total a pagar:</td>
+                                    <td colspan="4" class="px-4 py-5 font-bold text-right text-emerald-100 uppercase tracking-widest text-sm">Total a pagar:</td>
                                     <td class="px-4 py-5 font-bold text-2xl text-emerald-400 text-right" id="total-carrito">$0.00</td>
                                     <td></td>
                                 </tr>
@@ -343,15 +359,23 @@
 
     function agregarAlCarrito() {
         if (!productoSeleccionado) { mostrarToast('Debe buscar y elegir un producto', 'error'); return; }
-        const cantidad = parseInt(document.getElementById('cantidad-producto').value);
-        if (cantidad <= 0 || isNaN(cantidad)) { mostrarToast('Cantidad inválida', 'error'); return; }
-        if (cantidad > productoSeleccionado.stock) {
-            mostrarToast(`Stock insuficiente (Hay ${productoSeleccionado.stock})`, 'error'); return;
+        
+        const tipoVenta = document.getElementById('tipo-venta').value;
+        const cantidadInput = parseInt(document.getElementById('cantidad-producto').value);
+        
+        if (cantidadInput <= 0 || isNaN(cantidadInput)) { mostrarToast('Cantidad inválida', 'error'); return; }
+
+        const unidadesPorCaja = productoSeleccionado.cantidad_caja || 1;
+        const cantidadFinal = (tipoVenta === 'caja') ? (cantidadInput * unidadesPorCaja) : cantidadInput;
+
+        if (cantidadFinal > productoSeleccionado.stock) {
+            mostrarToast(`Stock insuficiente (Hay ${productoSeleccionado.stock} unidades)`, 'error'); return;
         }
 
         const existente = carrito.find(i => i.producto_id === productoSeleccionado.id);
+        
         if (existente) {
-            const nueva = existente.cantidad + cantidad;
+            const nueva = existente.cantidad + cantidadFinal;
             if (nueva > productoSeleccionado.stock) {
                 mostrarToast(`La suma supera el stock (${productoSeleccionado.stock})`, 'error'); return;
             }
@@ -359,12 +383,13 @@
             existente.subtotal = nueva * existente.precio_unitario;
         } else {
             carrito.push({
-                producto_id:    productoSeleccionado.id,
-                nombre:         productoSeleccionado.nombre,
+                producto_id:     productoSeleccionado.id,
+                nombre:          productoSeleccionado.nombre,
                 precio_unitario: parseFloat(productoSeleccionado.precio),
-                precio_compra:   parseFloat(productoSeleccionado.precio_compra ?? 0), // guardar para cálculo de utilidad
-                cantidad:       cantidad,
-                subtotal:       cantidad * parseFloat(productoSeleccionado.precio)
+                precio_compra:   parseFloat(productoSeleccionado.precio_compra ?? 0),
+                cantidad:        cantidadFinal,
+                unidades_por_caja: unidadesPorCaja, // Guardamos esto para el cálculo visual
+                subtotal:        cantidadFinal * parseFloat(productoSeleccionado.precio)
             });
         }
 
@@ -402,25 +427,51 @@
         if (carrito.length === 0) { container.classList.add('hidden'); return; }
         container.classList.remove('hidden');
 
-        tbody.innerHTML = carrito.map((item, index) => `
-            <tr class="hover:bg-app-bg transition-colors">
-                <td class="px-4 py-3 font-medium text-white">${item.nombre}</td>
-                <td class="px-4 py-3 text-app-textMuted">$${item.precio_unitario.toFixed(2)}</td>
-                <td class="px-4 py-3 text-center">
-                    <input type="number" min="1" value="${item.cantidad}"
-                        onchange="actualizarCantidad(${index}, this.value)"
-                        class="w-16 px-1 py-1.5 bg-app-bg border border-app-accent rounded-lg text-white text-center focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500">
-                </td>
-                <td class="px-4 py-3 font-bold text-emerald-400 text-right">$${item.subtotal.toFixed(2)}</td>
-                <td class="px-4 py-3 text-center">
-                    <button onclick="removerItem(${index})" class="text-red-400 hover:text-red-300 p-1 rounded hover:bg-red-500/10 transition-colors tooltip" title="Quitar item">
-                        <svg class="w-5 h-5 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    </button>
-                </td>
-            </tr>
-        `).join('');
+        tbody.innerHTML = carrito.map((item, index) => {
+            // Lógica de empaque inteligente
+            let detalleEmpaque = `<span class="text-xs text-app-textMuted">Individual</span>`;
+            
+            if (item.unidades_por_caja > 1) {
+                const numCajas = Math.floor(item.cantidad / item.unidades_por_caja);
+                const unidadesSobrantes = item.cantidad % item.unidades_por_caja;
+                
+                if (numCajas > 0) {
+                    detalleEmpaque = `
+                        <div class="flex flex-col items-center">
+                            <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-md border border-emerald-500/30 font-bold">
+                                📦 ${numCajas} ${numCajas === 1 ? 'Caja' : 'Cajas'}
+                            </span>
+                            ${unidadesSobrantes > 0 ? `<span class="text-[10px] text-app-textMuted mt-1">+${unidadesSobrantes} sueltas</span>` : ''}
+                        </div>`;
+                }
+            }
 
-        document.getElementById('total-carrito').textContent = `$${total.toFixed(2)}`;
+            return `
+                <tr class="hover:bg-app-bg transition-colors border-b border-app-accent/20">
+                    <td class="px-4 py-4 font-medium text-white">${item.nombre}</td>
+                    <td class="px-4 py-4 text-app-textMuted font-mono">$${item.precio_unitario.toFixed(2)}</td>
+                    <td class="px-4 py-4 text-center">${detalleEmpaque}</td>
+                    <td class="px-4 py-4 text-center">
+                        <div class="flex flex-col items-center">
+                            <input type="number" min="1" value="${item.cantidad}"
+                                onchange="actualizarCantidad(${index}, this.value)"
+                                class="w-20 px-1 py-1.5 bg-app-bg border border-app-accent rounded-lg text-white text-center focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-bold">
+                            <span class="text-[10px] text-app-textMuted mt-1 uppercase">Unidades Totales</span>
+                        </div>
+                    </td>
+                    <td class="px-4 py-4 font-bold text-emerald-400 text-right text-base">$${item.subtotal.toFixed(2)}</td>
+                    <td class="px-4 py-4 text-center">
+                        <button onclick="removerItem(${index})" class="text-red-400 hover:text-red-300 p-2 rounded-xl hover:bg-red-500/10 transition-all group">
+                            <svg class="w-5 h-5 mx-auto transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+
+        document.getElementById('total-carrito').textContent = `$${total.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
     }
 
     async function procesarVenta() {
@@ -516,49 +567,92 @@
     }
 
     function verDetalle(id) {
-        fetch(`/ventas/${id}/detalle`)
-            .then(r => r.json())
-            .then(venta => {
-                const detalles = venta.detalles?.map(d => `
-                    <div class="flex justify-between items-center py-3 border-b border-app-accent/30 last:border-0 hover:bg-app-bg/50 px-2 rounded-lg transition-colors">
-                        <div>
-                            <div class="font-medium text-white">${d.producto?.nombre ?? 'Producto Desconocido'}</div>
-                            <div class="text-xs text-app-textMuted mt-0.5"><span class="bg-app-accent/50 px-1 rounded">x${d.cantidad}</span> a $${parseFloat(d.precio_unitario).toFixed(2)}</div>
-                        </div>
-                        <div class="text-right">
-                            <div class="font-bold text-white">$${parseFloat(d.subtotal).toFixed(2)}</div>
-                        </div>
-                    </div>
-                `).join('') ?? '<p class="text-app-textMuted">Sin detalles registrados</p>';
+    fetch(`/ventas/${id}/detalle`)
+        .then(r => r.json())
+        .then(venta => {
+            const detalles = venta.detalles?.map(d => {
+                // --- Lógica de cálculo de empaque ---
+                const unidadesTotales = parseInt(d.cantidad);
+                const unidadesPorCaja = parseInt(d.producto?.cantidad_caja) || 1;
+                let textoEmpaque = "";
 
-                document.getElementById('modal-contenido').innerHTML = `
-                    <div class="mb-6 bg-app-bg p-4 rounded-xl border border-app-accent">
-                        <div class="text-center font-mono text-xs text-app-textMuted uppercase mb-3 border-b border-app-accent/50 pb-2">Ticket # ${venta.id}</div>
-                        <div class="grid grid-cols-2 gap-4 text-sm mt-3">
-                            <div><span class="text-app-textMuted text-xs block uppercase">Fecha y Hora</span><div class="font-medium text-white">${new Date(venta.fecha_venta).toLocaleString('es-CO')}</div></div>
-                            <div><span class="text-app-textMuted text-xs block uppercase">Método Pago</span><div class="font-medium text-emerald-400 capitalize">${venta.metodo_pago}</div></div>
-                        </div>
-                    </div>
-                    
-                    <h4 class="font-semibold text-app-textMuted text-xs uppercase mb-3 px-2">Detalle de Compra</h4>
-                    <div class="bg-app-bg border border-app-accent rounded-xl p-2 mb-6">
-                        ${detalles}
-                    </div>
+                if (unidadesPorCaja > 1) {
+                    const cajas = Math.floor(unidadesTotales / unidadesPorCaja);
+                    const sueltas = unidadesTotales % unidadesPorCaja;
 
-                    <div class="bg-app-card border-t border-app-primary/30 p-4 -mx-6 -mb-6 pb-6 mt-4 flex justify-between items-center bg-gradient-to-r from-emerald-500/10 to-transparent">
-                        <span class="text-lg text-app-textMuted font-bold">Total Pagar:</span>
-                        <span class="text-3xl font-bold text-emerald-400 tracking-tight">$${parseFloat(venta.total).toFixed(2)}</span>
+                    if (cajas > 0) {
+                        textoEmpaque = `<span class="text-emerald-400 font-bold">📦 ${cajas} ${cajas === 1 ? 'Caja' : 'Cajas'}</span>`;
+                        if (sueltas > 0) {
+                            textoEmpaque += ` <span class="text-app-textMuted">+ ${sueltas} sueltas</span>`;
+                        }
+                    } else {
+                        textoEmpaque = `<span class="text-app-textMuted">${unidadesTotales} unidades sueltas</span>`;
+                    }
+                } else {
+                    textoEmpaque = `<span class="text-app-textMuted">${unidadesTotales} unidades</span>`;
+                }
+                // -------------------------------------
+
+                return `
+                    <div class="flex justify-between items-center py-4 border-b border-app-accent/30 last:border-0 hover:bg-app-bg/50 px-3 rounded-lg transition-colors">
+                        <div class="flex-1">
+                            <div class="font-medium text-white text-base">${d.producto?.nombre ?? 'Producto Desconocido'}</div>
+                            <div class="flex flex-col mt-1">
+                                <div class="text-xs uppercase tracking-wider">${textoEmpaque}</div>
+                                <div class="text-[10px] text-app-textMuted mt-0.5">Precio Unit: $${parseFloat(d.precio_unitario).toFixed(2)}</div>
+                            </div>
+                        </div>
+                        <div class="text-right ml-4">
+                            <div class="font-bold text-white text-lg">$${parseFloat(d.subtotal).toFixed(2)}</div>
+                        </div>
                     </div>
                 `;
+            }).join('') ?? '<p class="text-app-textMuted">Sin detalles registrados</p>';
+
+            document.getElementById('modal-contenido').innerHTML = `
+                <div class="mb-6 bg-app-bg p-4 rounded-xl border border-app-accent relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-2 opacity-10">
+                        <svg class="w-16 h-16" fill="currentColor" viewBox="0 0 24 24"><path d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+                    </div>
+                    <div class="text-center font-mono text-xs text-app-textMuted uppercase mb-3 border-b border-app-accent/50 pb-2">Ticket # ${venta.id.toString().substring(0,8)}</div>
+                    <div class="grid grid-cols-2 gap-4 text-sm mt-3">
+                        <div>
+                            <span class="text-app-textMuted text-[10px] block uppercase font-bold mb-1">Fecha y Hora</span>
+                            <div class="font-medium text-white">${new Date(venta.fecha_venta).toLocaleString('es-CO', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}</div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-app-textMuted text-[10px] block uppercase font-bold mb-1">Método Pago</span>
+                            <div class="font-medium text-emerald-400 capitalize flex items-center justify-end gap-1">
+                                ${venta.metodo_pago === 'efectivo' ? '💵' : (venta.metodo_pago === 'tarjeta' ? '💳' : '🏦')} ${venta.metodo_pago}
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 
-                const modal = document.getElementById('modal-detalle');
-                modal.classList.remove('hidden');
-                setTimeout(() => {
-                    modal.classList.remove('opacity-0');
-                    document.getElementById('modal-detalle-content').classList.remove('scale-95');
-                }, 10);
-            });
-    }
+                <h4 class="font-semibold text-app-textMuted text-[10px] uppercase mb-3 px-2 tracking-widest">Resumen de Artículos</h4>
+                <div class="bg-app-bg border border-app-accent rounded-xl p-1 mb-6 shadow-inner">
+                    ${detalles}
+                </div>
+
+                <div class="bg-app-card border-t border-emerald-500/30 p-5 -mx-6 -mb-6 mt-4 flex justify-between items-center bg-gradient-to-r from-emerald-500/10 to-indigo-500/5">
+                    <div>
+                        <span class="text-xs text-app-textMuted font-bold uppercase block">Total de la Venta</span>
+                        <span class="text-[10px] text-emerald-500/70 font-mono italic">IVA Incluido</span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-3xl font-bold text-emerald-400 tracking-tighter">$${parseFloat(venta.total).toFixed(2)}</span>
+                    </div>
+                </div>
+            `;
+            
+            const modal = document.getElementById('modal-detalle');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                document.getElementById('modal-detalle-content').classList.remove('scale-95');
+            }, 10);
+        });
+}
 
     function cerrarModal() {
         const modal = document.getElementById('modal-detalle');

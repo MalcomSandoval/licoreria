@@ -363,6 +363,19 @@
                             </select>
                         </div>
 
+                        {{-- Cantidad por Caja --}}
+                        <div>
+                            <label class="block text-xs font-semibold text-app-textMuted uppercase tracking-wider mb-2">
+                                Cantidad por Caja
+                            </label>
+                            <div class="relative">
+                                <input type="number" min="1" id="f-cantidad-caja"
+                                    class="w-full pl-10 pr-4 py-3 bg-app-bg border border-app-accent rounded-xl text-white focus:outline-none focus:border-app-primary focus:ring-1 focus:ring-app-primary transition"
+                                    placeholder="24">
+                            </div>
+                            <p class="text-[10px] text-app-textMuted/50 mt-1 ml-1">Unidades que trae cada caja/paca</p>
+                        </div>
+
                         <div class="md:col-span-2">
                             <label
                                 class="block text-xs font-semibold text-app-textMuted uppercase tracking-wider mb-2">Código
@@ -472,6 +485,7 @@
             document.getElementById('f-categoria').value = producto.categoria;
             document.getElementById('f-codigo').value = producto.codigo_barras ?? '';
             document.getElementById('f-descripcion').value = producto.descripcion ?? '';
+            document.getElementById('f-cantidad-caja').value = producto.cantidad_caja ?? '';
 
             const modal = document.getElementById('producto-modal');
             modal.classList.remove('hidden');
@@ -561,69 +575,70 @@
         }
 
         async function guardarProducto() {
-            const nombre = document.getElementById('f-nombre').value.trim();
-            const precio = parseFloat(document.getElementById('f-precio').value);
+    const nombre = document.getElementById('f-nombre').value.trim();
+    const precio = parseFloat(document.getElementById('f-precio').value);
 
-            if (!nombre || isNaN(precio) || precio <= 0) {
-                mostrarMsgForm('Validación: Nombre y precio válido son requeridos', 'error');
-                return;
-            }
+    if (!nombre || isNaN(precio) || precio <= 0) {
+        mostrarMsgForm('Validación: Nombre y precio válido son requeridos', 'error');
+        return;
+    }
 
-            const btnTextOriginal = document.getElementById('btn-texto').textContent;
-            document.getElementById('btn-texto').innerHTML = 'Guardando <span class="animate-pulse">...</span>';
+    const btnTextOriginal = document.getElementById('btn-texto').textContent;
+    document.getElementById('btn-texto').innerHTML = 'Guardando <span class="animate-pulse">...</span>';
 
-            const data = {
-                nombre,
-                precio,
-                precio_compra: parseFloat(document.getElementById('f-precio-compra').value) || 0,
-                stock: parseInt(document.getElementById('f-stock').value) || 0,
-                suma_stock: parseInt(document.getElementById('f-suma-stock').value) || 0,
-                categoria: document.getElementById('f-categoria').value,
-                codigo_barras: document.getElementById('f-codigo').value.trim(),
-                descripcion: document.getElementById('f-descripcion').value.trim(),
-            };
+    // ACTUALIZACIÓN AQUÍ:
+    const data = {
+        nombre,
+        precio,
+        precio_compra: parseFloat(document.getElementById('f-precio-compra').value) || 0,
+        stock: parseInt(document.getElementById('f-stock').value) || 0,
+        suma_stock: parseInt(document.getElementById('f-suma-stock').value) || 0,
+        cantidad_caja: parseInt(document.getElementById('f-cantidad-caja').value) || null, // <-- ESTA LÍNEA FALTABA
+        categoria: document.getElementById('f-categoria').value,
+        codigo_barras: document.getElementById('f-codigo').value.trim(),
+        descripcion: document.getElementById('f-descripcion').value.trim(),
+    };
 
-            const url = productoEditandoId ? `/productos/${productoEditandoId}` : '/productos';
-            const method = productoEditandoId ? 'PUT' : 'POST';
+    const url = productoEditandoId ? `/productos/${productoEditandoId}` : '/productos';
+    const method = productoEditandoId ? 'PUT' : 'POST';
 
-            try {
-                const res = await fetch(url, {
-                    method,
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify(data)
-                });
+    try {
+        const res = await fetch(url, {
+            method,
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(data)
+        });
 
-                let result;
-                try {
-                    result = await res.json();
-                } catch (parseError) {
-                    mostrarMsgForm('Error inesperado del servidor (respuesta inválida)', 'error');
-                    document.getElementById('btn-texto').textContent = btnTextOriginal;
-                    return;
-                }
-
-                if (res.ok && result.success) {
-                    mostrarToast(productoEditandoId ? 'Producto actualizado' : 'Producto registrado exitosamente', 'exito');
-                    cerrarModal();
-                    setTimeout(() => location.reload(), 800);
-                } else if (res.status === 422 && result.errors) {
-                    // Errores de validación de Laravel
-                    const primerError = Object.values(result.errors)[0][0];
-                    mostrarMsgForm(primerError, 'error');
-                    document.getElementById('btn-texto').textContent = btnTextOriginal;
-                } else {
-                    mostrarMsgForm(result.message ?? 'Error al guardar en base de datos', 'error');
-                    document.getElementById('btn-texto').textContent = btnTextOriginal;
-                }
-            } catch (e) {
-                mostrarMsgForm('Error de conexión de red', 'error');
-                document.getElementById('btn-texto').textContent = btnTextOriginal;
-            }
+        let result;
+        try {
+            result = await res.json();
+        } catch (parseError) {
+            mostrarMsgForm('Error inesperado del servidor (respuesta inválida)', 'error');
+            document.getElementById('btn-texto').textContent = btnTextOriginal;
+            return;
         }
+
+        if (res.ok && result.success) {
+            mostrarToast(productoEditandoId ? 'Producto actualizado' : 'Producto registrado exitosamente', 'exito');
+            cerrarModal();
+            setTimeout(() => location.reload(), 800);
+        } else if (res.status === 422 && result.errors) {
+            const primerError = Object.values(result.errors)[0][0];
+            mostrarMsgForm(primerError, 'error');
+            document.getElementById('btn-texto').textContent = btnTextOriginal;
+        } else {
+            mostrarMsgForm(result.message ?? 'Error al guardar en base de datos', 'error');
+            document.getElementById('btn-texto').textContent = btnTextOriginal;
+        }
+    } catch (e) {
+        mostrarMsgForm('Error de conexión de red', 'error');
+        document.getElementById('btn-texto').textContent = btnTextOriginal;
+    }
+}
 
         async function desactivarProducto(id) {
             if (!confirm('¿Seguro que deseas desactivar este producto del inventario?')) return;
