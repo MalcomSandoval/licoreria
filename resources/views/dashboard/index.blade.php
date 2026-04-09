@@ -266,7 +266,7 @@
                     
                     <div class="bg-app-bg/50 backdrop-blur-sm border border-app-accent/30 p-4 rounded-xl flex items-center justify-between group hover:bg-app-bg transition-colors">
                         <div>
-                            <div class="text-xs text-app-textMuted font-medium uppercase tracking-wide mb-1">Ingresos 7D</div>
+                            <div class="text-xs text-app-textMuted font-medium uppercase tracking-wide mb-1">Ingresos 7-Dias</div>
                             <div class="text-2xl font-bold text-indigo-400">${{ number_format($totalSemana, 2) }}</div>
                         </div>
                         <div class="w-10 h-10 rounded-full bg-indigo-500/10 flex items-center justify-center text-indigo-400">
@@ -298,6 +298,7 @@
             </div>
 
         </div>
+
 
     </div>
 @endsection
