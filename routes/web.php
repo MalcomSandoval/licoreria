@@ -10,6 +10,8 @@ use App\Models\Venta;
 use App\Models\Producto;
 use Carbon\Carbon;
 
+
+
 // --- 1. RUTAS PÚBLICAS (Cualquiera puede verlas) ---
 Route::get('/', function () {
     return view('principal');
@@ -22,11 +24,11 @@ Route::get('/login', function () {
 Route::post('/login', [AuthController::class, 'login'])->name('login.post');
 
 // Registro y Activación
+// Registro y Activación
 Route::get('/registro', [AuthController::class, 'mostrarRegistro'])->name('registro.index');
 Route::post('/registrar', [AuthController::class, 'registrar'])->name('registrar.post');
 Route::post('/activar', [AuthController::class, 'activar'])->name('activar.post');
 Route::post('/reenviar-codigo', [AuthController::class, 'reenviarCodigo'])->name('reenviar.codigo');
-
 
 // --- 2. RUTAS PROTEGIDAS (Solo usuarios LOGUEADOS Y ACTIVOS) ---
 Route::middleware(['auth', 'user.active'])->group(function () {
@@ -57,7 +59,7 @@ Route::middleware(['auth', 'user.active'])->group(function () {
     })->name('reportes.index');
 
     Route::get('/reportes/data', function (Request $request) {
-        $periodo    = (int) ($request->periodo ?? 7);
+        $periodo = (int) ($request->periodo ?? 7);
         $fechaLimite = Carbon::now()->subDays($periodo);
 
         $ventas = Venta::with('detalles.producto')
@@ -66,14 +68,14 @@ Route::middleware(['auth', 'user.active'])->group(function () {
             ->get()
             ->map(function ($venta) {
                 // Forzar campos numericos de la venta a tipos correctos
-                $venta->total         = (float) $venta->total;
+                $venta->total = (float) $venta->total;
                 $venta->precio_compra = (float) ($venta->precio_compra ?? 0);
 
                 $venta->detalles->transform(function ($d) {
                     $d->precio_unitario = (float) $d->precio_unitario;
-                    $d->precio_compra   = (float) ($d->precio_compra ?? 0);
-                    $d->subtotal        = (float) $d->subtotal;
-                    $d->cantidad        = (int)   $d->cantidad;
+                    $d->precio_compra = (float) ($d->precio_compra ?? 0);
+                    $d->subtotal = (float) $d->subtotal;
+                    $d->cantidad = (int) $d->cantidad;
                     return $d;
                 });
                 return $venta;
@@ -82,7 +84,7 @@ Route::middleware(['auth', 'user.active'])->group(function () {
         $productos = Producto::all();
 
         return response()->json([
-            'ventas'    => $ventas,
+            'ventas' => $ventas,
             'productos' => $productos,
         ]);
     })->name('reportes.data');
