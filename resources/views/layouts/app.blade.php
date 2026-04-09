@@ -143,23 +143,27 @@
                                 <p class="text-sm font-semibold text-white leading-tight -mb-1">{{ auth()->user()->nombre ?? 'Administrador' }}</p>
                                 <span class="text-xs text-app-primary">Online</span>
                             </div>
-                            <svg class="w-4 h-4 text-app-textMuted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                         </button>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="{{ route('password.edit') }}" 
+                        class="p-2 bg-app-accent/20 hover:bg-app-primary/20 text-app-textMuted hover:text-app-primary rounded-xl border border-app-accent/50 transition-all duration-200" 
+                        title="Seguridad">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
+                            </svg>
+                        </a>
 
-                        <!-- Menu Desplegable -->
-                        <div x-show="userMenu" x-transition.enter="transition ease-out duration-100" x-transition.enter-start="transform opacity-0 scale-95" x-transition.enter-end="transform opacity-100 scale-100" class="absolute right-0 mt-3 w-48 bg-app-card border border-app-accent rounded-xl shadow-2xl overflow-hidden py-1 z-50" style="display: none;">
-                            <div class="px-4 py-3 border-b border-app-accent/50 md:hidden">
-                                <p class="text-sm text-white font-medium">{{ auth()->user()->nombre ?? 'Admin' }}</p>
-                            </div>
-                            <a href="#" class="block px-4 py-2 text-sm text-app-textMuted hover:text-white hover:bg-app-accent/50 transition-colors">Configuración</a>
-                            <form method="POST" action="{{ route('logout') }}" class="w-full">
-                                @csrf
-                                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors flex items-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-                                    Cerrar Sesión
-                                </button>
-                            </form>
-                        </div>
+                        <form action="{{ route('logout') }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" 
+                                    class="p-2 bg-red-500/10 hover:bg-red-500/20 text-red-400 hover:text-red-500 rounded-xl border border-red-500/20 transition-all duration-200" 
+                                    title="Cerrar Sesión">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                </svg>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </header>
