@@ -61,7 +61,7 @@ class VentaController extends Controller
             ]);
 
             $totalVenta = 0;
-            $totalCosto = 0; // suma de precio_compra × cantidad de todos los items
+            $totalCosto = 0;
 
             foreach ($request->items as $item) {
                 $producto = Producto::findOrFail($item['producto_id']);
@@ -75,7 +75,6 @@ class VentaController extends Controller
 
                 $subtotal = $item['cantidad'] * $item['precio_unitario'];
 
-                // Precio de compra: viene del frontend (ya actualizado) o de la BD como fallback
                 $precioCompraItem = isset($item['precio_compra']) && $item['precio_compra'] > 0
                     ? (float) $item['precio_compra']
                     : (float) ($producto->precio_compra ?? 0);
@@ -92,12 +91,12 @@ class VentaController extends Controller
 
                 $producto->decrement('stock', $item['cantidad']);
                 $totalVenta += $subtotal;
-                $totalCosto += $precioCompraItem * $item['cantidad']; // acumular costo total
+                $totalCosto += $precioCompraItem * $item['cantidad'];
             }
 
             $venta->update([
                 'total'         => $totalVenta,
-                'precio_compra' => $totalCosto,  // costo total de la venta
+                'precio_compra' => $totalCosto,
             ]);
 
             DB::commit();
@@ -118,21 +117,38 @@ class VentaController extends Controller
 
     public function destroy($id)
     {
-        $venta = Venta::with('detalles')->findOrFail($id);
+        $venta = Venta::with('detalles.producto')->findOrFail($id);
 
         if (!$venta->activa) {
-            return response()->json(['success' => true]);
+            return response()->json([
+                'success' => false,
+                'error'   => 'Esta venta ya fue anulada anteriormente.',
+            ], 409);
         }
 
-        DB::transaction(function () use ($venta) {
+        $revertidos = [];
+
+        DB::transaction(function () use ($venta, &$revertidos) {
             foreach ($venta->detalles as $detalle) {
-                Producto::where('id', $detalle->producto_id)->increment('stock', $detalle->cantidad);
+                Producto::where('id', $detalle->producto_id)
+                    ->increment('stock', $detalle->cantidad);
+
+                $revertidos[] = [
+                    'nombre'   => $detalle->producto->nombre ?? 'Producto eliminado',
+                    'cantidad' => $detalle->cantidad,
+                ];
             }
 
             $venta->update(['activa' => 0]);
         });
 
-        return response()->json(['success' => true]);
+        return response()->json([
+            'success'     => true,
+            'total'       => $venta->total,
+            'metodo_pago' => $venta->metodo_pago,
+            'revertidos'  => $revertidos,
+            'mensaje'     => 'Venta anulada correctamente. Stock y registros restaurados.',
+        ]);
     }
 
     public function filtrar(Request $request)

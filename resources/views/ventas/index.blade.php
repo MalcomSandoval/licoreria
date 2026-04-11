@@ -243,11 +243,11 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 text-center hidden sm:table-cell">
-                            <span class="text-white font-medium bg-app-bg px-2.5 py-1 rounded-lg border border-app-accent">{{ $venta->detalles->count() }}</span>
+                            <span class="text-white font-medium bg-app-bg px-2.5 py-1 rounded-lg border border-app-accent">{{ $venta->detalles->sum('cantidad') }}</span>
                         </td>
                         <td class="px-6 py-4 text-center">
                             <div class="flex justify-center gap-2">
-                                <button onclick="verDetalle('{{ $venta->id }}')"
+                                <button onclick="verDetalleConImprimir('{{ $venta->id }}')"
                                     class="bg-indigo-500/10 hover:bg-indigo-500 hover:text-white text-indigo-400 border border-indigo-500/20 p-2 rounded-lg text-xs font-semibold transition-all tooltip" title="Ver Detalles">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                 </button>
@@ -269,6 +269,33 @@
                     @endforelse
                 </tbody>
             </table>
+        </div>
+    </div>
+</div>
+
+{{-- Modal de confirmación de anulación --}}
+<div id="modal-anular" class="fixed inset-0 bg-app-bg/80 backdrop-blur-sm flex items-center justify-center p-4 z-[60] hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-app-card rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.6)] border border-red-500/30 w-full max-w-md transform scale-95 transition-transform duration-300" id="modal-anular-content">
+        <div class="p-5 border-b border-red-500/20 flex justify-between items-center bg-app-bg rounded-t-2xl relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-r from-red-500/10 to-transparent pointer-events-none"></div>
+            <h3 class="text-lg font-bold text-white flex items-center gap-2 relative z-10">
+                <span class="text-red-400 text-xl">⚠️</span> Confirmar Anulación
+            </h3>
+            <button onclick="cerrarModalAnular()" class="text-app-textMuted hover:text-white transition-colors p-1.5 bg-app-card rounded-lg border border-app-accent hover:bg-red-500/20 hover:border-red-500/50 relative z-10">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <div class="p-6" id="modal-anular-body">
+            <p class="text-app-textMuted text-sm text-center">Cargando datos de la venta...</p>
+        </div>
+        <div class="p-4 border-t border-app-accent/50 bg-app-bg/50 rounded-b-2xl flex justify-end gap-3">
+            <button onclick="cerrarModalAnular()" class="px-5 py-2.5 bg-app-card border border-app-accent text-white font-medium rounded-xl hover:border-white/30 transition-colors">
+                Cancelar
+            </button>
+            <button id="btn-confirmar-anular" onclick="confirmarAnulacion()" class="px-5 py-2.5 bg-red-500 hover:bg-red-400 text-white font-bold rounded-xl transition-all hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                Sí, anular venta
+            </button>
         </div>
     </div>
 </div>
@@ -551,11 +578,11 @@
                         ${badgeMetodo}
                     </td>
                     <td class="px-6 py-4 text-center hidden sm:table-cell">
-                        <span class="text-white font-medium bg-app-bg px-2.5 py-1 rounded-lg border border-app-accent">${v.detalles?.length ?? 0}</span>
+                        <span class="text-white font-medium bg-app-bg px-2.5 py-1 rounded-lg border border-app-accent">${v.detalles?.reduce((acc, curr) => acc + parseInt(curr.cantidad), 0) ?? 0}</span>
                     </td>
                     <td class="px-6 py-4 text-center">
                         <div class="flex justify-center gap-2">
-                            <button onclick="verDetalle('${v.id}')" class="bg-indigo-500/10 hover:bg-indigo-500 hover:text-white text-indigo-400 border border-indigo-500/20 p-2 rounded-lg text-xs font-semibold transition-all tooltip" title="Ver Detalles"> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg> </button>
+                            <button onclick="verDetalleConImprimir('${v.id}')" class="bg-indigo-500/10 hover:bg-indigo-500 hover:text-white text-indigo-400 border border-indigo-500/20 p-2 rounded-lg text-xs font-semibold transition-all tooltip" title="Ver Detalles"> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg> </button>
                             <button onclick="eliminarVenta('${v.id}')" class="bg-red-500/10 hover:bg-red-500 hover:text-white text-red-500 border border-red-500/20 p-2 rounded-lg text-xs font-semibold transition-all tooltip" title="Anular"> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> </button>
                         </div>
                     </td>
@@ -665,25 +692,155 @@
 
     function imprimirRecibo() {
         window.print();
-        // A un nivel más pro: se abriría una nueva ventana con solo the form content formateado para la ticketera 58mm y .print()
         mostrarToast('Enviado a impresora (Preview)', 'exito');
     }
 
+    // Restablecer botón imprimir al abrir detalle de venta normal
+    function verDetalleConImprimir(id) {
+        const printBtn = document.querySelector('#modal-detalle .p-4.border-t');
+        if (printBtn) printBtn.classList.remove('hidden');
+        verDetalle(id);
+    }
+
+    // ─── Modal de anulación ──────────────────────────────────────────────────────
+    let ventaAAnularId = null;
+    let ventaAAnularData = null;
+
     async function eliminarVenta(id) {
-        if (!confirm('Esta acción anulará la venta en ingresos monetarios, pero no devuelve inventario (funcionalidad limitada actualmente). ¿Desea continuar?')) return;
+        ventaAAnularId = id;
+        ventaAAnularData = null;
+
+        // Abrir modal con estado de carga
+        const body = document.getElementById('modal-anular-body');
+        body.innerHTML = `<div class="flex justify-center py-6"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-red-400"></div></div>`;
+        abrirModalAnular();
+
+        // Cargar detalle de la venta para mostrar info
+        try {
+            const res = await fetch(`/ventas/${id}/detalle`);
+            const venta = await res.json();
+            ventaAAnularData = venta;
+
+            const metodoBadge = {
+                efectivo: '💵 Efectivo',
+                tarjeta:  '💳 Tarjeta',
+                transferencia: '🏦 Transferencia'
+            }[venta.metodo_pago] ?? venta.metodo_pago;
+
+            const productosHtml = (venta.detalles ?? []).map(d => `
+                <div class="flex justify-between items-center py-2 border-b border-app-accent/20 last:border-0">
+                    <div>
+                        <span class="text-white text-sm font-medium">${d.producto?.nombre ?? 'Desconocido'}</span>
+                        <span class="text-app-textMuted text-xs block">Se repondrá ${d.cantidad} ${d.cantidad === 1 ? 'unidad' : 'unidades'}</span>
+                    </div>
+                    <span class="text-emerald-400 font-mono text-sm">↩ ${d.cantidad}</span>
+                </div>
+            `).join('');
+
+            body.innerHTML = `
+                <p class="text-app-textMuted text-sm mb-5">Esta acción es <strong class="text-red-400">irreversible</strong>. Se eliminarán los ingresos y se devolverá el inventario:</p>
+                <div class="bg-app-bg rounded-xl border border-app-accent/50 p-4 mb-5">
+                    <div class="flex justify-between text-xs text-app-textMuted uppercase mb-3 pb-2 border-b border-app-accent/30">
+                        <span>Producto</span><span>Stock a reponer</span>
+                    </div>
+                    ${productosHtml || '<p class="text-app-textMuted text-xs text-center">Sin productos</p>'}
+                </div>
+                <div class="flex justify-between items-center bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+                    <span class="text-red-300 text-sm font-semibold">Monto a anular</span>
+                    <span class="text-red-400 text-xl font-bold">-$${parseFloat(venta.total).toFixed(2)}</span>
+                </div>
+                <div class="mt-3 text-center">
+                    <span class="text-xs text-app-textMuted">Método: ${metodoBadge} &nbsp;|&nbsp; ID: #${venta.id.substring(0,8)}</span>
+                </div>
+            `;
+        } catch(e) {
+            body.innerHTML = `<p class="text-red-400 text-sm text-center">Error al cargar los datos de la venta. ¿Desea anularla de todas formas?</p>`;
+        }
+    }
+
+    function abrirModalAnular() {
+        const modal = document.getElementById('modal-anular');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            document.getElementById('modal-anular-content').classList.remove('scale-95');
+        }, 10);
+    }
+
+    function cerrarModalAnular() {
+        const modal = document.getElementById('modal-anular');
+        modal.classList.add('opacity-0');
+        document.getElementById('modal-anular-content').classList.add('scale-95');
+        setTimeout(() => modal.classList.add('hidden'), 300);
+        ventaAAnularId = null;
+    }
+
+    async function confirmarAnulacion() {
+        if (!ventaAAnularId) return;
+        const id = ventaAAnularId;
+        const btn = document.getElementById('btn-confirmar-anular');
+        btn.disabled = true;
+        btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Anulando...';
+
         try {
             const response = await fetch(`/ventas/${id}`, {
                 method: 'DELETE',
                 headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
             });
             const data = await response.json();
+
+            cerrarModalAnular();
+
             if (data.success) {
-                document.getElementById(`venta-${id}`)?.classList.add('opacity-0', 'bg-red-500/10');
-                setTimeout(() => document.getElementById(`venta-${id}`)?.remove(), 300);
-                mostrarToast('Ticket anulado del sistema', 'exito');
+                // Desvanecer fila de la tabla
+                const fila = document.getElementById(`venta-${id}`);
+                if (fila) {
+                    fila.classList.add('opacity-0', 'transition-opacity', 'duration-500');
+                    setTimeout(() => fila.remove(), 500);
+                }
+
+                // Construir resumen de reversión
+                const listaRevertidos = (data.revertidos ?? []).map(r =>
+                    `<li class="flex justify-between"><span class="text-white">${r.nombre}</span><span class="text-emerald-400 font-mono">+${r.cantidad} uds</span></li>`
+                ).join('');
+
+                const metodoBadge = { efectivo: '💵', tarjeta: '💳', transferencia: '🏦' }[data.metodo_pago] ?? '';
+
+                mostrarToast('✅ Venta anulada — Stock y registros restaurados', 'exito');
+
+                // Mostrar detalle post-anulación en modal de detalle
+                document.getElementById('modal-contenido').innerHTML = `
+                    <div class="text-center mb-6">
+                        <div class="text-5xl mb-3">↩️</div>
+                        <h4 class="text-xl font-bold text-white">Venta Anulada</h4>
+                        <p class="text-app-textMuted text-sm mt-1">Los siguientes cambios fueron revertidos exitosamente</p>
+                    </div>
+                    <div class="bg-app-bg rounded-xl border border-emerald-500/20 p-4 mb-4">
+                        <p class="text-[10px] uppercase text-app-textMuted font-bold mb-3 tracking-wider">Stock repuesto al inventario</p>
+                        <ul class="space-y-2 text-sm">${listaRevertidos || '<li class="text-app-textMuted text-center">Sin productos</li>'}</ul>
+                    </div>
+                    <div class="flex justify-between items-center bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
+                        <span class="text-red-300 text-sm font-semibold">${metodoBadge} Ingreso anulado</span>
+                        <span class="text-red-400 text-xl font-bold">-$${parseFloat(data.total ?? 0).toFixed(2)}</span>
+                    </div>
+                `;
+                // Abrir el modal de detalle para mostrar el resumen
+                const detModal = document.getElementById('modal-detalle');
+                document.querySelector('#modal-detalle .p-4.border-t').classList.add('hidden'); // ocultar botón imprimir
+                detModal.classList.remove('hidden');
+                setTimeout(() => {
+                    detModal.classList.remove('opacity-0');
+                    document.getElementById('modal-detalle-content').classList.remove('scale-95');
+                }, 10);
+
+            } else {
+                mostrarToast(data.error ?? 'No se pudo anular la venta', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Sí, anular venta';
             }
         } catch(e) {
-            mostrarToast('Error en la eliminación', 'error');
+            mostrarToast('Error de red al anular', 'error');
+            cerrarModalAnular();
         }
     }
 

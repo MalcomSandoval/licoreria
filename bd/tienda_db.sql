@@ -127,31 +127,7 @@ INSERT INTO `ventas` (`id`, `usuario_id`, `total`, `precio_compra`, `fecha_venta
 	('9bd8beec-87e1-4475-9d27-09c5381f95a9', 'c54cbdb2-fc53-482b-8926-f55d14cb6a98', 1.00, 0.400000, '2026-04-07 22:29:05', 'efectivo', 1),
 	('c2edf613-a92b-4279-b135-cf1e78a1047d', 'c54cbdb2-fc53-482b-8926-f55d14cb6a98', 1.00, 0.500000, '2026-04-07 22:26:18', 'efectivo', 1);
 
--- Volcando estructura para disparador tienda_db.actualizar_total_venta
-SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO';
-DELIMITER //
-CREATE TRIGGER `actualizar_total_venta` AFTER INSERT ON `detalles_venta` FOR EACH ROW BEGIN
-  UPDATE ventas
-  SET total = (
-    SELECT SUM(subtotal)
-    FROM detalles_venta
-    WHERE venta_id = NEW.venta_id
-  )
-  WHERE id = NEW.venta_id;
-END//
-DELIMITER ;
-SET SQL_MODE=@OLDTMP_SQL_MODE;
 
--- Volcando estructura para disparador tienda_db.reducir_stock
-SET @OLDTMP_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO';
-DELIMITER //
-CREATE TRIGGER `reducir_stock` AFTER INSERT ON `detalles_venta` FOR EACH ROW BEGIN
-  UPDATE productos
-  SET stock = stock - NEW.cantidad
-  WHERE id = NEW.producto_id;
-END//
-DELIMITER ;
-SET SQL_MODE=@OLDTMP_SQL_MODE;
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;

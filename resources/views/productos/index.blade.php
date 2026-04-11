@@ -245,7 +245,9 @@
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <button onclick="editarProducto({{ $producto->toJson() }})"
+                                        <button
+                                            data-producto="{{ json_encode($producto) }}"
+                                            onclick="editarProducto(JSON.parse(this.dataset.producto))"
                                             class="bg-amber-500/10 hover:bg-amber-500 hover:text-white text-amber-500 border border-amber-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all">
                                             Editar
                                         </button>
