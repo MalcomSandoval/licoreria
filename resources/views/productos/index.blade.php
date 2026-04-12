@@ -245,9 +245,7 @@
                                 </td>
                                 <td class="px-6 py-4 text-center">
                                     <div class="flex items-center justify-center gap-2">
-                                        <button
-                                            data-producto="{{ json_encode($producto) }}"
-                                            onclick="editarProducto(JSON.parse(this.dataset.producto))"
+                                        <button onclick="editarProducto({{ $producto->toJson() }})"
                                             class="bg-amber-500/10 hover:bg-amber-500 hover:text-white text-amber-500 border border-amber-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all">
                                             Editar
                                         </button>
@@ -308,6 +306,21 @@
                                 placeholder="Ej: Cerveza Aguila 330ml">
                         </div>
 
+                         <div>
+                            <label
+                                class="block text-xs font-semibold text-app-textMuted uppercase tracking-wider mb-2">Categoría</label>
+                            <select id="f-categoria"
+                                class="w-full px-4 py-3 bg-app-bg border border-app-accent rounded-xl text-white focus:outline-none focus:border-app-primary focus:ring-1 focus:ring-app-primary transition outline-none appearance-none">
+                                <option value="General">General</option>
+                                <option value="Bebidas">Bebidas</option>
+                                <option value="Snacks">Snacks</option>
+                                <option value="Congelados">Congelados</option>
+                                <option value="Lácteos">Lácteos</option>
+                                <option value="Dulces">Dulces</option>
+                                <option value="Cigarros">Cigarros</option>
+                            </select>
+                        </div>
+
                         <div>
                             <label
                                 class="block text-xs font-semibold text-app-textMuted uppercase tracking-wider mb-2">Precio
@@ -332,6 +345,32 @@
                             </div>
                         </div>
 
+                        {{-- Precio de Venta de la Caja --}}
+                        <div>
+                            <label class="block text-xs font-semibold text-app-textMuted uppercase tracking-wider mb-2">
+                                Precio Venta (Caja)
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-3.5 text-app-textMuted">$</span>
+                                <input type="number" step="0.01" min="0" id="f-precio-venta-caja"
+                                    class="w-full pl-8 pr-4 py-3 bg-app-bg border border-app-accent rounded-xl text-white focus:outline-none focus:border-app-primary focus:ring-1 focus:ring-app-primary transition"
+                                    placeholder="Ej: 52000">
+                            </div>
+                        </div>
+
+                        {{-- Precio de Compra de la Caja --}}
+                        <div>
+                            <label class="block text-xs font-semibold text-app-textMuted uppercase tracking-wider mb-2">
+                                Precio Compra (Caja)
+                            </label>
+                            <div class="relative">
+                                <span class="absolute left-4 top-3.5 text-app-textMuted">$</span>
+                                <input type="number" step="0.01" min="0" id="f-precio-caja" 
+                                    class="w-full pl-8 pr-4 py-3 bg-app-bg border border-app-accent rounded-xl text-white focus:outline-none focus:border-app-primary focus:ring-1 focus:ring-app-primary transition"
+                                    placeholder="Ej: 45000">
+                            </div>
+                        </div>
+
                         <div>
                             <label
                                 class="block text-xs font-semibold text-app-textMuted uppercase tracking-wider mb-2">Stock
@@ -348,21 +387,6 @@
                             <input type="number" min="0" id="f-suma-stock" value="0"
                                 class="w-full px-4 py-3 bg-app-bg border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
                                 placeholder="Cantidad a sumar">
-                        </div>
-
-                        <div>
-                            <label
-                                class="block text-xs font-semibold text-app-textMuted uppercase tracking-wider mb-2">Categoría</label>
-                            <select id="f-categoria"
-                                class="w-full px-4 py-3 bg-app-bg border border-app-accent rounded-xl text-white focus:outline-none focus:border-app-primary focus:ring-1 focus:ring-app-primary transition outline-none appearance-none">
-                                <option value="General">General</option>
-                                <option value="Bebidas">Bebidas</option>
-                                <option value="Snacks">Snacks</option>
-                                <option value="Congelados">Congelados</option>
-                                <option value="Lácteos">Lácteos</option>
-                                <option value="Dulces">Dulces</option>
-                                <option value="Cigarros">Cigarros</option>
-                            </select>
                         </div>
 
                         {{-- Cantidad por Caja --}}
@@ -479,6 +503,8 @@
             document.getElementById('f-nombre').value = producto.nombre;
             document.getElementById('f-precio').value = producto.precio;
             document.getElementById('f-precio-compra').value = producto.precio_compra ?? '';
+            document.getElementById('f-precio-caja').value = producto.precio_caja ?? '';
+            document.getElementById('f-precio-venta-caja').value = producto.precio_venta_caja ?? '';
             document.getElementById('f-stock').value = producto.stock;
             document.getElementById('f-stock').readOnly = true;
             document.getElementById('f-stock').classList.add('opacity-50', 'bg-app-bg');
@@ -593,9 +619,11 @@
         nombre,
         precio,
         precio_compra: parseFloat(document.getElementById('f-precio-compra').value) || 0,
+        precio_caja: parseFloat(document.getElementById('f-precio-caja').value) || 0,
+        precio_venta_caja: parseFloat(document.getElementById('f-precio-venta-caja').value) || 0,
         stock: parseInt(document.getElementById('f-stock').value) || 0,
         suma_stock: parseInt(document.getElementById('f-suma-stock').value) || 0,
-        cantidad_caja: parseInt(document.getElementById('f-cantidad-caja').value) || null, // <-- ESTA LÍNEA FALTABA
+        cantidad_caja: parseInt(document.getElementById('f-cantidad-caja').value) || null,
         categoria: document.getElementById('f-categoria').value,
         codigo_barras: document.getElementById('f-codigo').value.trim(),
         descripcion: document.getElementById('f-descripcion').value.trim(),
