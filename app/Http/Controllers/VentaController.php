@@ -10,6 +10,7 @@ use App\Models\Venta;
 use App\Models\Producto;
 use App\Models\DetalleVenta;
 
+
 class VentaController extends Controller
 {    
     public function index()
@@ -39,116 +40,101 @@ class VentaController extends Controller
     }
 
     public function store(Request $request)
-    {
-        $request->validate([
-            'metodo_pago' => 'required|in:efectivo,tarjeta,transferencia',
-            'items'       => 'required|array|min:1',
-            'items.*.producto_id'    => 'required|exists:productos,id',
-            'items.*.cantidad'       => 'required|integer|min:1',
-            'items.*.precio_unitario'=> 'required|numeric|min:0',
+{
+    // Si la validación falla aquí, Laravel devuelve 422 JSON automáticamente 
+    // SIEMPRE QUE el JS envíe 'Accept: application/json'.
+    $request->validate([
+        'metodo_pago' => 'required|in:efectivo,tarjeta,transferencia',
+        'items'       => 'required|array|min:1',
+        'items.*.id'  => 'required|exists:productos,id', // Ojo: tu JS enviaba 'id', no 'producto_id'
+        'items.*.cantidad'       => 'required|integer|min:1',
+        'items.*.precio_unitario'=> 'required|numeric|min:0',
+        'items.*.tipo_venta'     => 'required|in:unidad,caja',
+    ]);
+
+    DB::beginTransaction();
+    try {
+        $venta = Venta::create([
+            // Solo usa Str::uuid() si tu migración dice $table->uuid('id')
+            'id'            => (string) Str::uuid(), 
+            'usuario_id'    => Auth::id() ?? 1, // Fallback por si no hay sesión
+            'total'         => 0,
+            'precio_compra' => 0,
+            'metodo_pago'   => $request->metodo_pago,
+            'activa'        => 1,
         ]);
 
-        DB::beginTransaction();
-        try {
-            $ventaId = Str::uuid();
-            $venta = Venta::create([
-                'id'            => $ventaId,
-                'usuario_id'    => Auth::id(),
-                'total'         => 0,
-                'precio_compra' => 0,
-                'metodo_pago'   => $request->metodo_pago,
-                'activa'        => 1,
-            ]);
+        $totalVenta = 0;
+        $totalCosto = 0;
 
-            $totalVenta = 0;
-            $totalCosto = 0;
+        foreach ($request->items as $item) {
+            $producto = Producto::findOrFail($item['id']); // Cambiado de producto_id a id según tu JS
 
-            foreach ($request->items as $item) {
-                $producto = Producto::findOrFail($item['producto_id']);
+            $unidadesARestar = ($item['tipo_venta'] === 'caja') 
+                ? ($item['cantidad'] * ($producto->cantidad_caja ?? 1)) 
+                : $item['cantidad'];
 
-                if ($producto->stock < $item['cantidad']) {
-                    DB::rollBack();
-                    return response()->json([
-                        'error' => "Stock insuficiente para {$producto->nombre}. Disponible: {$producto->stock}"
-                    ], 422);
-                }
-
-                $subtotal = $item['cantidad'] * $item['precio_unitario'];
-
-                $precioCompraItem = isset($item['precio_compra']) && $item['precio_compra'] > 0
-                    ? (float) $item['precio_compra']
-                    : (float) ($producto->precio_compra ?? 0);
-
-                DetalleVenta::create([
-                    'id'              => Str::uuid(),
-                    'venta_id'        => $ventaId,
-                    'producto_id'     => $item['producto_id'],
-                    'cantidad'        => $item['cantidad'],
-                    'precio_unitario' => $item['precio_unitario'],
-                    'subtotal'        => $subtotal,
-                    'precio_compra'   => $precioCompraItem,
-                ]);
-
-                $producto->decrement('stock', $item['cantidad']);
-                $totalVenta += $subtotal;
-                $totalCosto += $precioCompraItem * $item['cantidad'];
+            if ($producto->stock < $unidadesARestar) {
+                throw new \Exception("Stock insuficiente para {$producto->nombre}.");
             }
 
-            $venta->update([
-                'total'         => $totalVenta,
-                'precio_compra' => $totalCosto,
+            $subtotal = $item['cantidad'] * $item['precio_unitario'];
+            $precioCompraItem = (float) ($producto->precio_compra ?? 0);
+
+            $venta->detalles()->create([
+                'id'              => (string) Str::uuid(),
+                'producto_id'     => $item['id'],
+                'cantidad'        => $item['cantidad'],
+                'tipo_venta'      => $item['tipo_venta'],
+                'precio_unitario' => $item['precio_unitario'],
+                'subtotal'        => $subtotal,
+                'precio_compra'   => $precioCompraItem,
             ]);
 
-            DB::commit();
-            return response()->json([
-                'success' => true,
-                'venta_id' => $ventaId,
-                'total' => $totalVenta,
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'error' => 'Error al procesar la venta',
-                'message' => $e->getMessage(),
-            ], 500);
+            $producto->decrement('stock', $unidadesARestar);
+            
+            $totalVenta += $subtotal;
+            $totalCosto += ($precioCompraItem * $unidadesARestar);
         }
+
+        $venta->update([
+            'total'         => $totalVenta,
+            'precio_compra' => $totalCosto,
+        ]);
+
+        DB::commit();
+        return response()->json([
+            'success' => true,
+            'venta_id' => $venta->id,
+            'total' => $totalVenta,
+        ]);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json([
+            'success' => false, // Agregado para que tu JS lo detecte bien
+            'error' => $e->getMessage(),
+        ], 500);
     }
+}
 
     public function destroy($id)
     {
-        $venta = Venta::with('detalles.producto')->findOrFail($id);
+        $venta = Venta::with('detalles')->findOrFail($id);
 
         if (!$venta->activa) {
-            return response()->json([
-                'success' => false,
-                'error'   => 'Esta venta ya fue anulada anteriormente.',
-            ], 409);
+            return response()->json(['success' => true]);
         }
 
-        $revertidos = [];
-
-        DB::transaction(function () use ($venta, &$revertidos) {
+        DB::transaction(function () use ($venta) {
             foreach ($venta->detalles as $detalle) {
-                Producto::where('id', $detalle->producto_id)
-                    ->increment('stock', $detalle->cantidad);
-
-                $revertidos[] = [
-                    'nombre'   => $detalle->producto->nombre ?? 'Producto eliminado',
-                    'cantidad' => $detalle->cantidad,
-                ];
+                Producto::where('id', $detalle->producto_id)->increment('stock', $detalle->cantidad);
             }
 
             $venta->update(['activa' => 0]);
         });
 
-        return response()->json([
-            'success'     => true,
-            'total'       => $venta->total,
-            'metodo_pago' => $venta->metodo_pago,
-            'revertidos'  => $revertidos,
-            'mensaje'     => 'Venta anulada correctamente. Stock y registros restaurados.',
-        ]);
+        return response()->json(['success' => true]);
     }
 
     public function filtrar(Request $request)
