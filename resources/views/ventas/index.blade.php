@@ -161,18 +161,20 @@
                 </div>
             </div>
 
-            {{-- Checkout Footer --}}
+           {{-- Checkout Footer --}}
             <div class="flex flex-col sm:flex-row gap-6 items-end bg-app-bg/50 p-6 rounded-xl border border-app-accent/30 mt-6 pt-6">
                 <div class="flex-1 w-full">
                     <label class="block text-xs font-semibold text-app-textMuted uppercase tracking-wider mb-2">Método de Pago</label>
-                    <select id="metodo-pago"
+                    {{-- CAMBIO AQUÍ: id="metodo_pago" --}}
+                    <select id="metodo_pago" 
                         class="w-full lg:max-w-xs px-4 py-3.5 bg-app-card border border-app-accent rounded-xl text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition appearance-none">
                         <option value="efectivo">💵 Efectivo</option>
                         <option value="tarjeta">💳 Tarjeta (Datáfono)</option>
                         <option value="transferencia">🏦 Transferencia / Nequi</option>
                     </select>
                 </div>
-                <button onclick="procesarVenta()"
+                {{-- CAMBIO AQUÍ: onclick="procesarVenta(event)" --}}
+                <button onclick="procesarVenta(event)"
                     class="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-400 text-slate-900 px-8 py-3.5 rounded-xl font-bold text-lg transition-all hover:-translate-y-1 shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_25px_rgba(16,185,129,0.5)] flex items-center justify-center gap-2">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                     Procesar Cobro
@@ -243,11 +245,11 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 text-center hidden sm:table-cell">
-                            <span class="text-white font-medium bg-app-bg px-2.5 py-1 rounded-lg border border-app-accent">{{ $venta->detalles->sum('cantidad') }}</span>
+                            <span class="text-white font-medium bg-app-bg px-2.5 py-1 rounded-lg border border-app-accent">{{ $venta->detalles->count() }}</span>
                         </td>
                         <td class="px-6 py-4 text-center">
                             <div class="flex justify-center gap-2">
-                                <button onclick="verDetalleConImprimir('{{ $venta->id }}')"
+                                <button onclick="verDetalle('{{ $venta->id }}')"
                                     class="bg-indigo-500/10 hover:bg-indigo-500 hover:text-white text-indigo-400 border border-indigo-500/20 p-2 rounded-lg text-xs font-semibold transition-all tooltip" title="Ver Detalles">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                 </button>
@@ -269,33 +271,6 @@
                     @endforelse
                 </tbody>
             </table>
-        </div>
-    </div>
-</div>
-
-{{-- Modal de confirmación de anulación --}}
-<div id="modal-anular" class="fixed inset-0 bg-app-bg/80 backdrop-blur-sm flex items-center justify-center p-4 z-[60] hidden opacity-0 transition-opacity duration-300">
-    <div class="bg-app-card rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.6)] border border-red-500/30 w-full max-w-md transform scale-95 transition-transform duration-300" id="modal-anular-content">
-        <div class="p-5 border-b border-red-500/20 flex justify-between items-center bg-app-bg rounded-t-2xl relative overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-r from-red-500/10 to-transparent pointer-events-none"></div>
-            <h3 class="text-lg font-bold text-white flex items-center gap-2 relative z-10">
-                <span class="text-red-400 text-xl">⚠️</span> Confirmar Anulación
-            </h3>
-            <button onclick="cerrarModalAnular()" class="text-app-textMuted hover:text-white transition-colors p-1.5 bg-app-card rounded-lg border border-app-accent hover:bg-red-500/20 hover:border-red-500/50 relative z-10">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-            </button>
-        </div>
-        <div class="p-6" id="modal-anular-body">
-            <p class="text-app-textMuted text-sm text-center">Cargando datos de la venta...</p>
-        </div>
-        <div class="p-4 border-t border-app-accent/50 bg-app-bg/50 rounded-b-2xl flex justify-end gap-3">
-            <button onclick="cerrarModalAnular()" class="px-5 py-2.5 bg-app-card border border-app-accent text-white font-medium rounded-xl hover:border-white/30 transition-colors">
-                Cancelar
-            </button>
-            <button id="btn-confirmar-anular" onclick="confirmarAnulacion()" class="px-5 py-2.5 bg-red-500 hover:bg-red-400 text-white font-bold rounded-xl transition-all hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] flex items-center gap-2">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                Sí, anular venta
-            </button>
         </div>
     </div>
 </div>
@@ -330,6 +305,11 @@
 @endsection
 
 @push('scripts')
+
+<script>
+    window.csrfToken = "{{ csrf_token() }}";
+</script>
+
 <script>
     const productosDisponibles = @json($productos);
     let carrito = [];
@@ -384,159 +364,231 @@
         document.getElementById('cantidad-producto').focus();
     }
 
-    function agregarAlCarrito() {
-        if (!productoSeleccionado) { mostrarToast('Debe buscar y elegir un producto', 'error'); return; }
-        
-        const tipoVenta = document.getElementById('tipo-venta').value;
-        const cantidadInput = parseInt(document.getElementById('cantidad-producto').value);
-        
-        if (cantidadInput <= 0 || isNaN(cantidadInput)) { mostrarToast('Cantidad inválida', 'error'); return; }
-
-        const unidadesPorCaja = productoSeleccionado.cantidad_caja || 1;
-        const cantidadFinal = (tipoVenta === 'caja') ? (cantidadInput * unidadesPorCaja) : cantidadInput;
-
-        if (cantidadFinal > productoSeleccionado.stock) {
-            mostrarToast(`Stock insuficiente (Hay ${productoSeleccionado.stock} unidades)`, 'error'); return;
-        }
-
-        const existente = carrito.find(i => i.producto_id === productoSeleccionado.id);
-        
-        if (existente) {
-            const nueva = existente.cantidad + cantidadFinal;
-            if (nueva > productoSeleccionado.stock) {
-                mostrarToast(`La suma supera el stock (${productoSeleccionado.stock})`, 'error'); return;
-            }
-            existente.cantidad = nueva;
-            existente.subtotal = nueva * existente.precio_unitario;
-        } else {
-            carrito.push({
-                producto_id:     productoSeleccionado.id,
-                nombre:          productoSeleccionado.nombre,
-                precio_unitario: parseFloat(productoSeleccionado.precio),
-                precio_compra:   parseFloat(productoSeleccionado.precio_compra ?? 0),
-                cantidad:        cantidadFinal,
-                unidades_por_caja: unidadesPorCaja, // Guardamos esto para el cálculo visual
-                subtotal:        cantidadFinal * parseFloat(productoSeleccionado.precio)
-            });
-        }
-
-        productoSeleccionado = null;
-        document.getElementById('buscar-producto').value = '';
-        document.getElementById('cantidad-producto').value = 1;
-        document.getElementById('buscar-producto').focus();
-        renderizarCarrito();
+   function agregarAlCarrito() {
+    if (!productoSeleccionado) { 
+        mostrarToast('Debe buscar y elegir un producto', 'error'); 
+        return; 
+    }
+    
+    const tipoVenta = document.getElementById('tipo-venta').value;
+    const cantidadInput = parseInt(document.getElementById('cantidad-producto').value);
+    
+    if (cantidadInput <= 0 || isNaN(cantidadInput)) { 
+        mostrarToast('Cantidad inválida', 'error'); 
+        return; 
     }
 
-    function removerItem(index) {
-        carrito.splice(index, 1);
-        renderizarCarrito();
+    const unidadesPorCaja = productoSeleccionado.cantidad_caja || 1;
+    let precioAplicado = 0;
+    let cantidadTotalUnidades = 0;
+    let subtotalItem = 0;
+
+    // Lógica de Precios: Caja vs Unidad
+    if (tipoVenta === 'caja') {
+        const precioCajaBD = parseFloat(productoSeleccionado.precio_venta_caja);
+        
+        if (!precioCajaBD || precioCajaBD <= 0) {
+            mostrarToast('Este producto no tiene precio de caja definido', 'error');
+            return;
+        }
+
+        precioAplicado = precioCajaBD; // Precio directo de la BD
+        cantidadTotalUnidades = cantidadInput * unidadesPorCaja;
+        subtotalItem = cantidadInput * precioCajaBD; // Cantidad de cajas * Precio caja
+    } else {
+        precioAplicado = parseFloat(productoSeleccionado.precio);
+        cantidadTotalUnidades = cantidadInput;
+        subtotalItem = cantidadInput * precioAplicado;
     }
 
-    function actualizarCantidad(index, valor) {
-        const nueva = parseInt(valor);
-        if (nueva <= 0 || isNaN(nueva)) { removerItem(index); return; }
-        const producto = productosDisponibles.find(p => p.id === carrito[index].producto_id);
-        if (nueva > producto.stock) {
-            mostrarToast(`Límite de stock alcanzado (${producto.stock})`, 'error'); 
-            renderizarCarrito(); // re-render para forzar el valor anterior en el input html
-            return; 
-        }
-        carrito[index].cantidad = nueva;
-        carrito[index].subtotal = nueva * carrito[index].precio_unitario;
-        renderizarCarrito();
+    // Validar Stock
+    if (cantidadTotalUnidades > productoSeleccionado.stock) {
+        mostrarToast(`Stock insuficiente (Solo hay ${productoSeleccionado.stock} unidades)`, 'error'); 
+        return;
     }
+
+    // Buscar si ya existe el mismo producto con el mismo TIPO de venta
+    const existente = carrito.find(i => i.producto_id === productoSeleccionado.id && i.es_caja === (tipoVenta === 'caja'));
+    
+    if (existente) {
+        const nuevaCantidadTotal = existente.unidades_totales + cantidadTotalUnidades;
+        
+        if (nuevaCantidadTotal > productoSeleccionado.stock) {
+            mostrarToast(`La suma supera el stock disponible`, 'error'); 
+            return;
+        }
+
+        existente.cantidad += cantidadInput;
+        existente.unidades_totales = nuevaCantidadTotal;
+        existente.subtotal = existente.cantidad * precioAplicado;
+    } else {
+        carrito.push({
+            producto_id: productoSeleccionado.id,
+            nombre: productoSeleccionado.nombre,
+            precio_unitario: precioAplicado, // Si es caja, este es el precio de una caja
+            precio_compra: parseFloat(productoSeleccionado.precio_compra ?? 0),
+            cantidad: cantidadInput, // Cantidad según el selector (ej: 2 cajas)
+            unidades_totales: cantidadTotalUnidades, // Cantidad real para descontar stock
+            unidades_por_caja: unidadesPorCaja,
+            es_caja: (tipoVenta === 'caja'),
+            subtotal: subtotalItem
+        });
+    }
+
+    // Limpiar campos
+    productoSeleccionado = null;
+    document.getElementById('buscar-producto').value = '';
+    document.getElementById('cantidad-producto').value = 1;
+    document.getElementById('buscar-producto').focus();
+    renderizarCarrito();
+}
+
+function removerItem(index) {
+    carrito.splice(index, 1);
+    renderizarCarrito();
+}
+
+function actualizarCantidad(index, valor) {
+    const nueva = parseInt(valor);
+    if (nueva <= 0 || isNaN(nueva)) { removerItem(index); return; }
+    
+    const item = carrito[index];
+    const producto = productosDisponibles.find(p => p.id === item.producto_id);
+    
+    const nuevaCantidadTotal = item.es_caja ? (nueva * item.unidades_por_caja) : nueva;
+
+    if (nuevaCantidadTotal > producto.stock) {
+        mostrarToast(`Límite de stock alcanzado (${producto.stock} unidades)`, 'error'); 
+        renderizarCarrito();
+        return; 
+    }
+
+    item.cantidad = nueva;
+    item.unidades_totales = nuevaCantidadTotal;
+    item.subtotal = nueva * item.precio_unitario;
+    renderizarCarrito();
+}
 
     function renderizarCarrito() {
-        const container = document.getElementById('carrito-container');
-        const tbody = document.getElementById('carrito-items');
-        const total = carrito.reduce((s, i) => s + i.subtotal, 0);
+    const container = document.getElementById('carrito-container');
+    const tbody = document.getElementById('carrito-items');
+    const totalElement = document.getElementById('total-carrito');
+    const total = carrito.reduce((s, i) => s + i.subtotal, 0);
 
-        if (carrito.length === 0) { container.classList.add('hidden'); return; }
-        container.classList.remove('hidden');
+    if (carrito.length === 0) { 
+        container.classList.add('hidden'); 
+        return; 
+    }
+    
+    container.classList.remove('hidden');
 
-        tbody.innerHTML = carrito.map((item, index) => {
-            // Lógica de empaque inteligente
-            let detalleEmpaque = `<span class="text-xs text-app-textMuted">Individual</span>`;
-            
-            if (item.unidades_por_caja > 1) {
-                const numCajas = Math.floor(item.cantidad / item.unidades_por_caja);
-                const unidadesSobrantes = item.cantidad % item.unidades_por_caja;
-                
-                if (numCajas > 0) {
-                    detalleEmpaque = `
-                        <div class="flex flex-col items-center">
-                            <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-md border border-emerald-500/30 font-bold">
-                                📦 ${numCajas} ${numCajas === 1 ? 'Caja' : 'Cajas'}
-                            </span>
-                            ${unidadesSobrantes > 0 ? `<span class="text-[10px] text-app-textMuted mt-1">+${unidadesSobrantes} sueltas</span>` : ''}
-                        </div>`;
-                }
-            }
+    tbody.innerHTML = carrito.map((item, index) => {
+        // Lógica de etiqueta: Si es caja, muestra el icono y las unidades que trae
+        const detalleEmpaque = item.es_caja 
+            ? `<div class="flex flex-col items-center">
+                <span class="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-md border border-emerald-500/30 font-bold">
+                    📦 CAJA (x${item.unidades_por_caja})
+                </span>
+               </div>`
+            : `<span class="text-xs text-app-textMuted border border-app-accent/30 px-2 py-1 rounded-md">Individual</span>`;
 
-            return `
-                <tr class="hover:bg-app-bg transition-colors border-b border-app-accent/20">
-                    <td class="px-4 py-4 font-medium text-white">${item.nombre}</td>
-                    <td class="px-4 py-4 text-app-textMuted font-mono">$${item.precio_unitario.toFixed(2)}</td>
-                    <td class="px-4 py-4 text-center">${detalleEmpaque}</td>
-                    <td class="px-4 py-4 text-center">
-                        <div class="flex flex-col items-center">
-                            <input type="number" min="1" value="${item.cantidad}"
-                                onchange="actualizarCantidad(${index}, this.value)"
-                                class="w-20 px-1 py-1.5 bg-app-bg border border-app-accent rounded-lg text-white text-center focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-bold">
-                            <span class="text-[10px] text-app-textMuted mt-1 uppercase">Unidades Totales</span>
-                        </div>
-                    </td>
-                    <td class="px-4 py-4 font-bold text-emerald-400 text-right text-base">$${item.subtotal.toFixed(2)}</td>
-                    <td class="px-4 py-4 text-center">
-                        <button onclick="removerItem(${index})" class="text-red-400 hover:text-red-300 p-2 rounded-xl hover:bg-red-500/10 transition-all group">
-                            <svg class="w-5 h-5 mx-auto transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                            </svg>
-                        </button>
-                    </td>
-                </tr>
-            `;
-        }).join('');
+        return `
+            <tr class="hover:bg-app-bg transition-colors border-b border-app-accent/20">
+                <td class="px-4 py-4 font-medium text-white">
+                    ${item.nombre}
+                    ${item.es_caja ? '<span class="text-[10px] block text-emerald-500 font-bold">PRECIO MAYORISTA</span>' : ''}
+                </td>
+                <td class="px-4 py-4 text-app-textMuted font-mono">$${item.precio_unitario.toFixed(2)}</td>
+                <td class="px-4 py-4 text-center">${detalleEmpaque}</td>
+                <td class="px-4 py-4 text-center">
+                    <div class="flex flex-col items-center">
+                        <input type="number" min="1" value="${item.cantidad}"
+                            onchange="actualizarCantidad(${index}, this.value)"
+                            class="w-20 px-1 py-1.5 bg-app-bg border border-app-accent rounded-lg text-white text-center focus:border-emerald-500 focus:outline-none focus:ring-1 focus:ring-emerald-500 font-bold">
+                        <span class="text-[10px] text-app-textMuted mt-1 uppercase">
+                            ${item.es_caja ? 'Cant. Cajas' : 'Cant. Unidades'}
+                        </span>
+                    </div>
+                </td>
+                <td class="px-4 py-4 font-bold text-emerald-400 text-right text-base">$${item.subtotal.toFixed(2)}</td>
+                <td class="px-4 py-4 text-center">
+                    <button onclick="removerItem(${index})" class="text-red-400 hover:text-red-300 p-2 rounded-xl hover:bg-red-500/10 transition-all group">
+                        <svg class="w-5 h-5 mx-auto transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
 
-        document.getElementById('total-carrito').textContent = `$${total.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+    totalElement.textContent = `$${total.toLocaleString(undefined, {minimumFractionDigits: 2})}`;
+}
+
+   async function procesarVenta(e) {
+    // 1. Evitamos el error de "undefined currentTarget"
+    const boton = e && e.currentTarget ? e.currentTarget : null;
+
+    if (carrito.length === 0) {
+        mostrarToast('El carrito está vacío', 'error');
+        return;
     }
 
-    async function procesarVenta() {
-        if (carrito.length === 0) { mostrarToast('El carrito está vacío', 'error'); return; }
-        const metodo = document.getElementById('metodo-pago').value;
+    if (boton) {
+        boton.disabled = true;
+        boton.innerHTML = `
+            <svg class="animate-spin h-5 w-5 mr-3 inline-block" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg> Procesando...`;
+    }
 
-        // Deshabilitar botón temporalmente para evitar multi clic
-        const btnText = event.currentTarget.innerHTML;
-        event.currentTarget.innerHTML = "Procesando...";
-        event.currentTarget.disabled = true;
+    try {
+        // SOLUCIÓN: Obtenemos el valor de forma segura en una sola variable
+        const metodoPagoSeleccionado = document.getElementById('metodo_pago')?.value || 'efectivo';
 
-        try {
-            const response = await fetch('/ventas', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ metodo_pago: metodo, items: carrito })
-            });
+        const datosVenta = {
+            metodo_pago: metodoPagoSeleccionado, 
+            items: carrito.map(item => ({
+                // Usamos producto_id que es el que guardaste en agregarAlCarrito
+                id:              item.producto_id, 
+                cantidad:        item.cantidad,
+                precio_unitario: item.precio_unitario,
+                tipo_venta:      item.es_caja ? 'caja' : 'unidad', 
+                precio_compra:   item.precio_compra
+            }))
+        };
 
-            const data = await response.json();
-            if (data.success) {
-                mostrarToast('¡Facturación completada con éxito!', 'exito');
-                carrito = [];
-                renderizarCarrito();
-                setTimeout(() => location.reload(), 800);
-            } else {
-                mostrarToast(data.error || 'Error lógico al procesar', 'error');
-                event.currentTarget.disabled = false;
-                event.currentTarget.innerHTML = btnText;
-            }
-        } catch (e) {
-            mostrarToast('Error de red al servidor', 'error');
-            event.currentTarget.disabled = false;
-            event.currentTarget.innerHTML = btnText;
+        const response = await fetch('/ventas', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': window.csrfToken // Usas la variable que definiste arriba
+            },
+            body: JSON.stringify(datosVenta)
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            mostrarToast('Venta procesada con éxito', 'exito'); // Usé 'exito' para que coincida con tu función mostrarToast
+            carrito = []; 
+            renderizarCarrito();
+            if(result.venta_id) verDetalle(result.venta_id);
+        } else {
+            throw new Error(result.error || 'Error desconocido');
+        }
+
+    } catch (error) {
+        console.error('Error en la venta:', error);
+        mostrarToast(error.message, 'error');
+        
+        if (boton) {
+            boton.disabled = false;
+            boton.innerHTML = 'Procesar Venta';
         }
     }
+}
 
     async function filtrarVentas() {
         const metodo = document.getElementById('filtro-metodo').value;
@@ -578,11 +630,11 @@
                         ${badgeMetodo}
                     </td>
                     <td class="px-6 py-4 text-center hidden sm:table-cell">
-                        <span class="text-white font-medium bg-app-bg px-2.5 py-1 rounded-lg border border-app-accent">${v.detalles?.reduce((acc, curr) => acc + parseInt(curr.cantidad), 0) ?? 0}</span>
+                        <span class="text-white font-medium bg-app-bg px-2.5 py-1 rounded-lg border border-app-accent">${v.detalles?.length ?? 0}</span>
                     </td>
                     <td class="px-6 py-4 text-center">
                         <div class="flex justify-center gap-2">
-                            <button onclick="verDetalleConImprimir('${v.id}')" class="bg-indigo-500/10 hover:bg-indigo-500 hover:text-white text-indigo-400 border border-indigo-500/20 p-2 rounded-lg text-xs font-semibold transition-all tooltip" title="Ver Detalles"> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg> </button>
+                            <button onclick="verDetalle('${v.id}')" class="bg-indigo-500/10 hover:bg-indigo-500 hover:text-white text-indigo-400 border border-indigo-500/20 p-2 rounded-lg text-xs font-semibold transition-all tooltip" title="Ver Detalles"> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg> </button>
                             <button onclick="eliminarVenta('${v.id}')" class="bg-red-500/10 hover:bg-red-500 hover:text-white text-red-500 border border-red-500/20 p-2 rounded-lg text-xs font-semibold transition-all tooltip" title="Anular"> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> </button>
                         </div>
                     </td>
@@ -598,25 +650,22 @@
         .then(r => r.json())
         .then(venta => {
             const detalles = venta.detalles?.map(d => {
-                // --- Lógica de cálculo de empaque ---
-                const unidadesTotales = parseInt(d.cantidad);
-                const unidadesPorCaja = parseInt(d.producto?.cantidad_caja) || 1;
-                let textoEmpaque = "";
+                // --- Nueva Lógica basada en BD ---
+                const esCaja = d.tipo_venta === 'caja';
+                let etiquetaEmpaque = "";
 
-                if (unidadesPorCaja > 1) {
-                    const cajas = Math.floor(unidadesTotales / unidadesPorCaja);
-                    const sueltas = unidadesTotales % unidadesPorCaja;
-
-                    if (cajas > 0) {
-                        textoEmpaque = `<span class="text-emerald-400 font-bold">📦 ${cajas} ${cajas === 1 ? 'Caja' : 'Cajas'}</span>`;
-                        if (sueltas > 0) {
-                            textoEmpaque += ` <span class="text-app-textMuted">+ ${sueltas} sueltas</span>`;
-                        }
-                    } else {
-                        textoEmpaque = `<span class="text-app-textMuted">${unidadesTotales} unidades sueltas</span>`;
-                    }
+                if (esCaja) {
+                    // Si en la BD dice 'caja', mostramos el icono de caja y la cantidad de cajas
+                    etiquetaEmpaque = `
+                        <span class="text-emerald-400 font-bold flex items-center gap-1">
+                            📦 ${d.cantidad} ${parseInt(d.cantidad) === 1 ? 'Caja' : 'Cajas'}
+                        </span>`;
                 } else {
-                    textoEmpaque = `<span class="text-app-textMuted">${unidadesTotales} unidades</span>`;
+                    // Si dice 'unidad', mostramos unidades sueltas
+                    etiquetaEmpaque = `
+                        <span class="text-app-textMuted">
+                            ${d.cantidad} ${parseInt(d.cantidad) === 1 ? 'unidad suelta' : 'unidades sueltas'}
+                        </span>`;
                 }
                 // -------------------------------------
 
@@ -625,7 +674,7 @@
                         <div class="flex-1">
                             <div class="font-medium text-white text-base">${d.producto?.nombre ?? 'Producto Desconocido'}</div>
                             <div class="flex flex-col mt-1">
-                                <div class="text-xs uppercase tracking-wider">${textoEmpaque}</div>
+                                <div class="text-[10px] uppercase tracking-wider font-semibold">${etiquetaEmpaque}</div>
                                 <div class="text-[10px] text-app-textMuted mt-0.5">Precio Unit: $${parseFloat(d.precio_unitario).toFixed(2)}</div>
                             </div>
                         </div>
@@ -636,6 +685,7 @@
                 `;
             }).join('') ?? '<p class="text-app-textMuted">Sin detalles registrados</p>';
 
+            // Renderizado del resto del modal (Ticket cabecera y total)
             document.getElementById('modal-contenido').innerHTML = `
                 <div class="mb-6 bg-app-bg p-4 rounded-xl border border-app-accent relative overflow-hidden">
                     <div class="absolute top-0 right-0 p-2 opacity-10">
@@ -664,7 +714,7 @@
                 <div class="bg-app-card border-t border-emerald-500/30 p-5 -mx-6 -mb-6 mt-4 flex justify-between items-center bg-gradient-to-r from-emerald-500/10 to-indigo-500/5">
                     <div>
                         <span class="text-xs text-app-textMuted font-bold uppercase block">Total de la Venta</span>
-                        <span class="text-[10px] text-emerald-500/70 font-mono italic">IVA Incluido</span>
+                        <span class="text-[10px] text-emerald-500/70 font-mono italic">Punto de Venta</span>
                     </div>
                     <div class="text-right">
                         <span class="text-3xl font-bold text-emerald-400 tracking-tighter">$${parseFloat(venta.total).toFixed(2)}</span>
@@ -692,155 +742,25 @@
 
     function imprimirRecibo() {
         window.print();
+        // A un nivel más pro: se abriría una nueva ventana con solo the form content formateado para la ticketera 58mm y .print()
         mostrarToast('Enviado a impresora (Preview)', 'exito');
     }
 
-    // Restablecer botón imprimir al abrir detalle de venta normal
-    function verDetalleConImprimir(id) {
-        const printBtn = document.querySelector('#modal-detalle .p-4.border-t');
-        if (printBtn) printBtn.classList.remove('hidden');
-        verDetalle(id);
-    }
-
-    // ─── Modal de anulación ──────────────────────────────────────────────────────
-    let ventaAAnularId = null;
-    let ventaAAnularData = null;
-
     async function eliminarVenta(id) {
-        ventaAAnularId = id;
-        ventaAAnularData = null;
-
-        // Abrir modal con estado de carga
-        const body = document.getElementById('modal-anular-body');
-        body.innerHTML = `<div class="flex justify-center py-6"><div class="animate-spin rounded-full h-8 w-8 border-b-2 border-red-400"></div></div>`;
-        abrirModalAnular();
-
-        // Cargar detalle de la venta para mostrar info
-        try {
-            const res = await fetch(`/ventas/${id}/detalle`);
-            const venta = await res.json();
-            ventaAAnularData = venta;
-
-            const metodoBadge = {
-                efectivo: '💵 Efectivo',
-                tarjeta:  '💳 Tarjeta',
-                transferencia: '🏦 Transferencia'
-            }[venta.metodo_pago] ?? venta.metodo_pago;
-
-            const productosHtml = (venta.detalles ?? []).map(d => `
-                <div class="flex justify-between items-center py-2 border-b border-app-accent/20 last:border-0">
-                    <div>
-                        <span class="text-white text-sm font-medium">${d.producto?.nombre ?? 'Desconocido'}</span>
-                        <span class="text-app-textMuted text-xs block">Se repondrá ${d.cantidad} ${d.cantidad === 1 ? 'unidad' : 'unidades'}</span>
-                    </div>
-                    <span class="text-emerald-400 font-mono text-sm">↩ ${d.cantidad}</span>
-                </div>
-            `).join('');
-
-            body.innerHTML = `
-                <p class="text-app-textMuted text-sm mb-5">Esta acción es <strong class="text-red-400">irreversible</strong>. Se eliminarán los ingresos y se devolverá el inventario:</p>
-                <div class="bg-app-bg rounded-xl border border-app-accent/50 p-4 mb-5">
-                    <div class="flex justify-between text-xs text-app-textMuted uppercase mb-3 pb-2 border-b border-app-accent/30">
-                        <span>Producto</span><span>Stock a reponer</span>
-                    </div>
-                    ${productosHtml || '<p class="text-app-textMuted text-xs text-center">Sin productos</p>'}
-                </div>
-                <div class="flex justify-between items-center bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
-                    <span class="text-red-300 text-sm font-semibold">Monto a anular</span>
-                    <span class="text-red-400 text-xl font-bold">-$${parseFloat(venta.total).toFixed(2)}</span>
-                </div>
-                <div class="mt-3 text-center">
-                    <span class="text-xs text-app-textMuted">Método: ${metodoBadge} &nbsp;|&nbsp; ID: #${venta.id.substring(0,8)}</span>
-                </div>
-            `;
-        } catch(e) {
-            body.innerHTML = `<p class="text-red-400 text-sm text-center">Error al cargar los datos de la venta. ¿Desea anularla de todas formas?</p>`;
-        }
-    }
-
-    function abrirModalAnular() {
-        const modal = document.getElementById('modal-anular');
-        modal.classList.remove('hidden');
-        setTimeout(() => {
-            modal.classList.remove('opacity-0');
-            document.getElementById('modal-anular-content').classList.remove('scale-95');
-        }, 10);
-    }
-
-    function cerrarModalAnular() {
-        const modal = document.getElementById('modal-anular');
-        modal.classList.add('opacity-0');
-        document.getElementById('modal-anular-content').classList.add('scale-95');
-        setTimeout(() => modal.classList.add('hidden'), 300);
-        ventaAAnularId = null;
-    }
-
-    async function confirmarAnulacion() {
-        if (!ventaAAnularId) return;
-        const id = ventaAAnularId;
-        const btn = document.getElementById('btn-confirmar-anular');
-        btn.disabled = true;
-        btn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Anulando...';
-
+        if (!confirm('Esta acción anulará la venta en ingresos monetarios, pero no devuelve inventario (funcionalidad limitada actualmente). ¿Desea continuar?')) return;
         try {
             const response = await fetch(`/ventas/${id}`, {
                 method: 'DELETE',
                 headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
             });
             const data = await response.json();
-
-            cerrarModalAnular();
-
             if (data.success) {
-                // Desvanecer fila de la tabla
-                const fila = document.getElementById(`venta-${id}`);
-                if (fila) {
-                    fila.classList.add('opacity-0', 'transition-opacity', 'duration-500');
-                    setTimeout(() => fila.remove(), 500);
-                }
-
-                // Construir resumen de reversión
-                const listaRevertidos = (data.revertidos ?? []).map(r =>
-                    `<li class="flex justify-between"><span class="text-white">${r.nombre}</span><span class="text-emerald-400 font-mono">+${r.cantidad} uds</span></li>`
-                ).join('');
-
-                const metodoBadge = { efectivo: '💵', tarjeta: '💳', transferencia: '🏦' }[data.metodo_pago] ?? '';
-
-                mostrarToast('✅ Venta anulada — Stock y registros restaurados', 'exito');
-
-                // Mostrar detalle post-anulación en modal de detalle
-                document.getElementById('modal-contenido').innerHTML = `
-                    <div class="text-center mb-6">
-                        <div class="text-5xl mb-3">↩️</div>
-                        <h4 class="text-xl font-bold text-white">Venta Anulada</h4>
-                        <p class="text-app-textMuted text-sm mt-1">Los siguientes cambios fueron revertidos exitosamente</p>
-                    </div>
-                    <div class="bg-app-bg rounded-xl border border-emerald-500/20 p-4 mb-4">
-                        <p class="text-[10px] uppercase text-app-textMuted font-bold mb-3 tracking-wider">Stock repuesto al inventario</p>
-                        <ul class="space-y-2 text-sm">${listaRevertidos || '<li class="text-app-textMuted text-center">Sin productos</li>'}</ul>
-                    </div>
-                    <div class="flex justify-between items-center bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3">
-                        <span class="text-red-300 text-sm font-semibold">${metodoBadge} Ingreso anulado</span>
-                        <span class="text-red-400 text-xl font-bold">-$${parseFloat(data.total ?? 0).toFixed(2)}</span>
-                    </div>
-                `;
-                // Abrir el modal de detalle para mostrar el resumen
-                const detModal = document.getElementById('modal-detalle');
-                document.querySelector('#modal-detalle .p-4.border-t').classList.add('hidden'); // ocultar botón imprimir
-                detModal.classList.remove('hidden');
-                setTimeout(() => {
-                    detModal.classList.remove('opacity-0');
-                    document.getElementById('modal-detalle-content').classList.remove('scale-95');
-                }, 10);
-
-            } else {
-                mostrarToast(data.error ?? 'No se pudo anular la venta', 'error');
-                btn.disabled = false;
-                btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> Sí, anular venta';
+                document.getElementById(`venta-${id}`)?.classList.add('opacity-0', 'bg-red-500/10');
+                setTimeout(() => document.getElementById(`venta-${id}`)?.remove(), 300);
+                mostrarToast('Ticket anulado del sistema', 'exito');
             }
         } catch(e) {
-            mostrarToast('Error de red al anular', 'error');
-            cerrarModalAnular();
+            mostrarToast('Error en la eliminación', 'error');
         }
     }
 
@@ -869,3 +789,4 @@
 }
 </style>
 @endpush
+
