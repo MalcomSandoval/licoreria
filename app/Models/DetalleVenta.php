@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class DetalleVenta extends Model
 {
-    protected $table = 'detalles_venta';  // 👈 esto faltaba
+    protected $table = 'detalles_venta';
     protected $primaryKey = 'id';
     public $incrementing = false;
     protected $keyType = 'string';
@@ -17,6 +17,7 @@ class DetalleVenta extends Model
         'venta_id',
         'producto_id',
         'cantidad',
+        'tipo_venta',
         'precio_unitario',
         'subtotal',
         'precio_compra'
