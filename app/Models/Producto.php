@@ -20,6 +20,8 @@ class Producto extends Model
         'descripcion',
         'precio',
         'precio_compra',
+        'precio_caja',        
+        'precio_venta_caja',
         'stock',
         'cantidad_caja',
         'categoria',
@@ -31,8 +33,10 @@ class Producto extends Model
     protected $casts = [
         'precio' => 'decimal:2',
         'precio_compra' => 'decimal:2',
+        'precio_caja' => 'decimal:2',
+        'precio_venta_caja' => 'decimal:2',
         'stock' => 'integer',
-        'cantidad_caja' => 'integer', // <-- Agregado para castear a entero
+        'cantidad_caja' => 'integer',
         'activo' => 'boolean',
     ];
 }
