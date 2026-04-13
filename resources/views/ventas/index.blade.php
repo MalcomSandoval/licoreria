@@ -526,69 +526,70 @@ function actualizarCantidad(index, valor) {
 }
 
    async function procesarVenta(e) {
-    // 1. Evitamos el error de "undefined currentTarget"
-    const boton = e && e.currentTarget ? e.currentTarget : null;
+        const boton = e && e.currentTarget ? e.currentTarget : null;
 
-    if (carrito.length === 0) {
-        mostrarToast('El carrito está vacío', 'error');
-        return;
-    }
-
-    if (boton) {
-        boton.disabled = true;
-        boton.innerHTML = `
-            <svg class="animate-spin h-5 w-5 mr-3 inline-block" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg> Procesando...`;
-    }
-
-    try {
-        // SOLUCIÓN: Obtenemos el valor de forma segura en una sola variable
-        const metodoPagoSeleccionado = document.getElementById('metodo_pago')?.value || 'efectivo';
-
-        const datosVenta = {
-            metodo_pago: metodoPagoSeleccionado, 
-            items: carrito.map(item => ({
-                // Usamos producto_id que es el que guardaste en agregarAlCarrito
-                id:              item.producto_id, 
-                cantidad:        item.cantidad,
-                precio_unitario: item.precio_unitario,
-                tipo_venta:      item.es_caja ? 'caja' : 'unidad', 
-                precio_compra:   item.precio_compra
-            }))
-        };
-
-        const response = await fetch('/ventas', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': window.csrfToken // Usas la variable que definiste arriba
-            },
-            body: JSON.stringify(datosVenta)
-        });
-
-        const result = await response.json();
-
-        if (result.success) {
-            mostrarToast('Venta procesada con éxito', 'exito'); // Usé 'exito' para que coincida con tu función mostrarToast
-            carrito = []; 
-            renderizarCarrito();
-            if(result.venta_id) verDetalle(result.venta_id);
-        } else {
-            throw new Error(result.error || 'Error desconocido');
+        if (carrito.length === 0) {
+            mostrarToast('El carrito está vacío', 'error');
+            return;
         }
 
-    } catch (error) {
-        console.error('Error en la venta:', error);
-        mostrarToast(error.message, 'error');
-        
         if (boton) {
-            boton.disabled = false;
-            boton.innerHTML = 'Procesar Venta';
+            boton.disabled = true;
+            // Guardamos el texto original para no hardcodearlo si cambia después
+            boton.dataset.originalText = "Procesar Venta"; 
+            boton.innerHTML = `
+                <svg class="animate-spin h-5 w-5 mr-3 inline-block" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg> Procesando...`;
+        }
+
+        try {
+            const metodoPagoSeleccionado = document.getElementById('metodo_pago')?.value || 'efectivo';
+
+            const datosVenta = {
+                metodo_pago: metodoPagoSeleccionado, 
+                items: carrito.map(item => ({
+                    id:              item.producto_id, 
+                    cantidad:        item.cantidad,
+                    precio_unitario: item.precio_unitario,
+                    tipo_venta:      item.es_caja ? 'caja' : 'unidad', 
+                    precio_compra:   item.precio_compra
+                }))
+            };
+
+            const response = await fetch('/ventas', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': window.csrfToken
+                },
+                body: JSON.stringify(datosVenta)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                mostrarToast('Venta procesada con éxito', 'exito');
+                carrito = []; 
+                renderizarCarrito();
+                if(result.venta_id) verDetalle(result.venta_id);
+            } else {
+                throw new Error(result.error || 'Error desconocido');
+            }
+
+        } catch (error) {
+            console.error('Error en la venta:', error);
+            mostrarToast(error.message, 'error');
+            // Quitamos el return o la lógica duplicada de aquí
+        } finally {
+            // ESTO SE EJECUTA SIEMPRE
+            if (boton) {
+                boton.disabled = false;
+                boton.innerHTML = 'Procesar Venta';
+            }
         }
     }
-}
 
     async function filtrarVentas() {
         const metodo = document.getElementById('filtro-metodo').value;
