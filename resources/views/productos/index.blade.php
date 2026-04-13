@@ -85,17 +85,28 @@
                 </div>
             </div>
 
-            <div
-                class="bg-app-card rounded-2xl shadow-lg border border-app-accent/50 p-5 hover:border-amber-500/50 transition-colors group col-span-2 lg:col-span-1">
-                <h3 class="text-app-textMuted text-xs font-semibold uppercase tracking-wider mb-2">Valor Inventario</h3>
-                <div class="flex items-end justify-between">
-                    <p class="text-xl sm:text-2xl font-bold text-white group-hover:text-amber-400 transition-colors">
-                        ${{ number_format($valorInventario, 2) }}</p>
-                    <div class="text-amber-400/50 group-hover:text-amber-400 transition-colors hidden sm:block">
+            <div class="bg-app-card rounded-2xl shadow-lg border border-app-accent/50 p-5 hover:border-amber-500/50 transition-colors group col-span-2 lg:col-span-1 overflow-hidden flex flex-col justify-between">
+                <h3 class="text-app-textMuted text-[10px] uppercase font-semibold tracking-wider mb-1 truncate">
+                    Valor Inventario
+                </h3>
+                
+                <div class="flex items-center justify-between gap-2">
+                    <div class="flex-1 min-w-0">
+                        <p class="text-xl sm:text-2xl font-bold text-white group-hover:text-amber-400 transition-colors leading-none">
+                            ${{ $valorInventario >= 1000000 
+                                ? number_format($valorInventario/1000000, 2).'M' 
+                                : ($valorInventario >= 1000 ? number_format($valorInventario/1000, 1).'K' : number_format($valorInventario, 2)) 
+                            }}
+                        </p>
+                        
+                        <p class="text-[10px] text-app-textMuted font-mono mt-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                            ${{ number_format($valorInventario, 2) }}
+                        </p>
+                    </div>
+
+                    <div class="text-amber-400/50 group-hover:text-amber-400 transition-colors shrink-0">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z">
-                            </path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
                 </div>
