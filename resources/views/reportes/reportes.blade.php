@@ -156,94 +156,117 @@
     }
 
     function procesar() {
-        let totalVentas   = 0;
-        let totalProductos = 0;
-        let totalUtilidad = 0;  // suma de (total venta - precio_compra venta)
-        const mapa = {};
+    let totalVentas   = 0;
+    let totalProductos = 0;
+    let totalUtilidad = 0; 
+    const mapa = {};
 
-        datos.ventas.forEach(venta => {
-            const ingresoVenta = parseFloat(venta.total ?? 0);
-            const costoVenta   = parseFloat(venta.precio_compra ?? 0); // campo directo de tabla ventas
+    datos.ventas.forEach(venta => {
+        const ingresoVenta = parseFloat(venta.total ?? 0);
+        const costoVenta   = parseFloat(venta.precio_compra ?? 0);
 
-            totalVentas   += ingresoVenta;
-            totalUtilidad += (ingresoVenta - costoVenta); // utilidad real de esta venta
+        totalVentas   += ingresoVenta;
+        totalUtilidad += (ingresoVenta - costoVenta);
 
-            venta.detalles.forEach(detalle => {
-                totalProductos += detalle.cantidad;
-                const nombre = detalle.producto?.nombre || 'Producto Eliminado / N/A';
+        venta.detalles.forEach(detalle => {
+            totalProductos += detalle.cantidad;
+            const nombre = detalle.producto?.nombre || 'Producto Eliminado / N/A';
 
-                const precioVenta   = detalle.precio_unitario;
-                const precioCompra  = detalle.precio_compra;
-                const cantidad      = detalle.cantidad;
-                const utilidadItem  = (precioVenta - precioCompra) * cantidad;
+            const precioVenta   = detalle.precio_unitario;
+            const precioCompra  = detalle.precio_compra;
+            const cantidad      = detalle.cantidad;
+            const utilidadItem  = (precioVenta - precioCompra) * cantidad;
+            
+            // 1. Detectar el tipo de venta desde el detalle
+            const tipoVenta = detalle.tipo_venta; // 'caja' o 'unidad'
 
-                if (!mapa[nombre]) {
-                    mapa[nombre] = { cantidad: 0, ingresos: 0, utilidad: 0, costo: 0 };
-                }
+            if (!mapa[nombre]) {
+                // 2. Inicializamos cajas y unidades en 0
+                mapa[nombre] = { 
+                    cantidad: 0, 
+                    ingresos: 0, 
+                    utilidad: 0, 
+                    costo: 0, 
+                    cajas: 0, 
+                    unidades: 0 
+                };
+            }
 
-                mapa[nombre].cantidad  += cantidad;
-                mapa[nombre].ingresos  += parseFloat(detalle.subtotal ?? 0);
-                mapa[nombre].utilidad  += utilidadItem;
-                mapa[nombre].costo     += precioCompra * cantidad;
-            });
+            mapa[nombre].cantidad  += cantidad;
+            mapa[nombre].ingresos  += parseFloat(detalle.subtotal ?? 0);
+            mapa[nombre].utilidad  += utilidadItem;
+            mapa[nombre].costo     += precioCompra * cantidad;
+
+            // 3. Sumar según el tipo de venta detectado
+            if (tipoVenta === 'caja') {
+                mapa[nombre].cajas += cantidad;
+            } else if (tipoVenta === 'unidad') {
+                mapa[nombre].unidades += cantidad;
+            }
         });
+    });
 
-        const promedio = datos.ventas.length ? totalVentas / datos.ventas.length : 0;
+    // ... (resto del código de promedios e innerText se mantiene igual)
+    const promedio = datos.ventas.length ? totalVentas / datos.ventas.length : 0;
+    document.getElementById('ventas').innerText   = `$${totalVentas.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits:2})}`;
+    document.getElementById('ganancia').innerText = `$${totalUtilidad.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits:2})}`;
+    document.getElementById('promedio').innerText = `$${promedio.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits:2})}`;
+    document.getElementById('productos').innerText = totalProductos;
 
-        document.getElementById('ventas').innerText   = `$${totalVentas.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits:2})}`;
-        document.getElementById('ganancia').innerText = `$${totalUtilidad.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits:2})}`;
-        document.getElementById('promedio').innerText = `$${promedio.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits:2})}`;
-        document.getElementById('productos').innerText = totalProductos;
+    const tabla = Object.entries(mapa).sort((a, b) => b[1].utilidad - a[1].utilidad);
 
-        const tabla = Object.entries(mapa).sort((a, b) => b[1].utilidad - a[1].utilidad);
+    const tbody = document.getElementById('tabla');
+    if (tabla.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-app-textMuted bg-app-bg/20"><div class="text-4xl mb-3 opacity-30">📊</div><p>No hay datos estadísticos para este periodo</p></td></tr>`;
+    } else {
+        tbody.innerHTML = tabla.map(([nombre, detalle], index) => {
+            const margenPct = detalle.ingresos > 0 ? (detalle.utilidad / detalle.ingresos * 100) : 0;
+            const margenPositivo = margenPct >= 0;
+            const sinCosto = detalle.costo === 0;
 
-        const tbody = document.getElementById('tabla');
-        if (tabla.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-app-textMuted bg-app-bg/20"><div class="text-4xl mb-3 opacity-30">📊</div><p>No hay datos estadísticos para este periodo</p></td></tr>`;
-        } else {
-            tbody.innerHTML = tabla.map(([nombre, detalle], index) => {
-
-                // Margen real = utilidad / ingreso * 100
-                const margenPct = detalle.ingresos > 0
-                    ? (detalle.utilidad / detalle.ingresos * 100)
-                    : 0;
-                const margenPositivo = margenPct >= 0;
-                const sinCosto = detalle.costo === 0; // aviso: precio_compra no fue registrado
-
-                return `
-                <tr class="hover:bg-app-bg/50 transition-colors">
-                    <td class="px-6 py-4 text-center">
-                        <span class="w-6 h-6 rounded bg-app-bg border border-app-accent flex items-center justify-center text-xs text-app-textMuted font-mono">
-                            ${index + 1}
-                        </span>
-                    </td>
-                    <td class="px-6 py-4 font-medium text-white">${nombre}</td>
-                    <td class="px-6 py-4 text-center">
-                        <span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded text-xs font-bold">${detalle.cantidad}</span>
-                    </td>
-                    <td class="px-6 py-4 text-right">
-                        <span class="font-bold text-white">$${detalle.ingresos.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits:2})}</span>
-                    </td>
-                    <td class="px-6 py-4 text-right hidden sm:table-cell">
-                        ${sinCosto
-                            ? `<span class="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">Sin precio compra</span>`
-                            : `<span class="font-bold ${detalle.utilidad >= 0 ? 'text-emerald-400' : 'text-red-400'}">$${detalle.utilidad.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits:2})}</span>`
-                        }
-                    </td>
-                    <td class="px-6 py-4 text-center hidden sm:table-cell">
-                        ${sinCosto
-                            ? `<span class="text-xs text-app-textMuted">—</span>`
-                            : `<span class="text-xs font-semibold ${margenPositivo ? 'text-emerald-400 bg-emerald-500/10' : 'text-red-400 bg-red-500/10'} px-2 py-1 rounded-lg flex items-center justify-center gap-1 w-max mx-auto">
-                                ${margenPositivo ? '↑' : '↓'} ${Math.abs(margenPct).toFixed(1)}%
-                              </span>`
-                        }
-                    </td>
-                </tr>
-            `}).join('');
-        }
-
-        document.getElementById('table-loader').classList.add('hidden');
+            return `
+            <tr class="hover:bg-app-bg/50 transition-colors">
+                <td class="px-6 py-4 text-center">
+                    <span class="w-6 h-6 rounded bg-app-bg border border-app-accent flex items-center justify-center text-xs text-app-textMuted font-mono mx-auto">
+                        ${index + 1}
+                    </span>
+                </td>
+                <td class="px-6 py-4">
+                    <div class="font-medium text-white">${nombre}</div>
+                    <div class="flex gap-1 mt-1">
+                        ${detalle.cajas > 0 ? 
+                            `<span class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">📦 ${detalle.cajas} Cajas</span>` 
+                            : ''}
+                        ${detalle.unidades > 0 ? 
+                            `<span class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20 font-bold">🏷️ ${detalle.unidades} Unds</span>` 
+                            : ''}
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-center">
+                    <span class="bg-blue-500/10 text-blue-400 border border-blue-500/20 px-2 py-0.5 rounded text-xs font-bold">${detalle.cantidad}</span>
+                </td>
+                <td class="px-6 py-4 text-right">
+                    <span class="font-bold text-white">$${detalle.ingresos.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits:2})}</span>
+                </td>
+                <td class="px-6 py-4 text-right hidden sm:table-cell">
+                    ${sinCosto
+                        ? `<span class="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">Sin precio compra</span>`
+                        : `<span class="font-bold ${detalle.utilidad >= 0 ? 'text-emerald-400' : 'text-red-400'}">$${detalle.utilidad.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits:2})}</span>`
+                    }
+                </td>
+                <td class="px-6 py-4 text-center hidden sm:table-cell">
+                    ${sinCosto
+                        ? `<span class="text-xs text-app-textMuted">—</span>`
+                        : `<span class="text-xs font-semibold ${margenPositivo ? 'text-emerald-400 bg-emerald-500/10' : 'text-red-400 bg-red-500/10'} px-2 py-1 rounded-lg border border-current/10 inline-flex items-center justify-center gap-1 w-max mx-auto">
+                            ${margenPositivo ? '↑' : '↓'} ${Math.abs(margenPct).toFixed(1)}%
+                          </span>`
+                    }
+                </td>
+            </tr>`;
+        }).join('');
     }
+    document.getElementById('table-loader').classList.add('hidden');
+}
 
     async function exportarPDF() {
         const btnTextOriginal = document.getElementById('btn-exportar').innerHTML;

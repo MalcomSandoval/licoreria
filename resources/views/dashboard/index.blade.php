@@ -150,40 +150,52 @@
                 </div>
             </div>
 
-            <!-- Top Productos -->
             <div class="bg-app-card rounded-2xl shadow-lg border border-app-accent/50 flex flex-col h-[400px]">
-                <div class="flex justify-between items-center p-6 border-b border-app-accent/50">
-                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
-                        <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                        Top 5 Más Vendidos
-                    </h3>
-                    <a href="{{ route('reportes.index') }}" class="text-app-textMuted hover:text-white text-sm font-semibold hover:underline bg-app-bg px-3 py-1 rounded-lg border border-app-accent transition-colors">Reportes</a>
-                </div>
-                <div class="flex-1 overflow-y-auto p-2">
-                    <ul class="space-y-2 p-4">
-                        @forelse($topProductos as $index => $producto)
-                            <li class="flex items-center justify-between p-3 bg-app-bg rounded-xl border border-app-accent/30 hover:bg-app-card transition-colors">
-                                <div class="flex items-center gap-4">
-                                    <div class="w-8 h-8 rounded-lg bg-{{ $index == 0 ? 'amber-500/20' : ($index == 1 ? 'slate-400/20' : ($index == 2 ? 'amber-700/20' : 'app-primary/10')) }} text-{{ $index == 0 ? 'amber-500' : ($index == 1 ? 'slate-300' : ($index == 2 ? 'amber-600' : 'app-primary')) }} font-bold text-sm flex items-center justify-center border border-current/20 shadow-sm">
-                                        #{{ $index + 1 }}
-                                    </div>
-                                    <div>
-                                        <div class="font-semibold text-white text-sm leading-tight">{{ $producto->nombre }}</div>
-                                    </div>
-                                </div>
-                                <div class="text-right">
-                                    <div class="font-bold text-app-textMain">{{ $producto->total_vendido }} <span class="text-xs text-app-textMuted font-normal">uds.</span></div>
-                                </div>
-                            </li>
-                        @empty
-                            <div class="flex flex-col items-center justify-center h-full text-app-textMuted space-y-3 opacity-50 pt-10">
-                                <span class="text-4xl">📦</span>
-                                <p>No hay datos de productos vendidos</p>
+    <div class="flex justify-between items-center p-6 border-b border-app-accent/50">
+        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+            <svg class="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            Top 5 Más Vendidos
+        </h3>
+        <a href="{{ route('reportes.index') }}" class="text-app-textMuted hover:text-white text-sm font-semibold hover:underline bg-app-bg px-3 py-1 rounded-lg border border-app-accent transition-colors">Reportes</a>
+    </div>
+    <div class="flex-1 overflow-y-auto p-2">
+        <ul class="space-y-2 p-4">
+            @forelse($topProductos as $index => $producto)
+                <li class="flex items-center justify-between p-3 bg-app-bg rounded-xl border border-app-accent/30 hover:bg-app-card transition-colors">
+                    <div class="flex items-center gap-4">
+                        <div class="w-8 h-8 rounded-lg bg-{{ $index == 0 ? 'amber-500/20' : ($index == 1 ? 'slate-400/20' : ($index == 2 ? 'amber-700/20' : 'app-primary/10')) }} text-{{ $index == 0 ? 'amber-500' : ($index == 1 ? 'slate-300' : ($index == 2 ? 'amber-600' : 'app-primary')) }} font-bold text-sm flex items-center justify-center border border-current/20 shadow-sm">
+                            #{{ $index + 1 }}
+                        </div>
+                        <div>
+                            <div class="font-semibold text-white text-sm leading-tight">{{ $producto->nombre }}</div>
+                            <div class="flex gap-2 mt-1">
+                                @if($producto->total_cajas > 0)
+                                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                        📦 {{ $producto->total_cajas }} Cajas
+                                    </span>
+                                @endif
+                                @if($producto->total_unidades > 0)
+                                    <span class="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                        🏷️ {{ $producto->total_unidades }} Uds.
+                                    </span>
+                                @endif
                             </div>
-                        @endforelse
-                    </ul>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <div class="font-bold text-app-textMain text-lg">{{ $producto->total_vendido }}</div>
+                        <div class="text-[10px] text-app-textMuted uppercase font-bold">Total</div>
+                    </div>
+                </li>
+            @empty
+                <div class="flex flex-col items-center justify-center h-full text-app-textMuted space-y-3 opacity-50 pt-10">
+                    <span class="text-4xl">📦</span>
+                    <p>No hay datos de productos vendidos</p>
                 </div>
-            </div>
+            @endforelse
+        </ul>
+    </div>
+</div>
 
         </div>
 

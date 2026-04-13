@@ -29,7 +29,11 @@ class DashboardController extends Controller
             ->take(5)
             ->get();
 
-        $topProductos = DetalleVenta::select('producto_id', DB::raw('SUM(cantidad) as total_vendido'))
+        $topProductos = DetalleVenta::select('producto_id')
+            ->selectRaw('SUM(cantidad) as total_vendido')
+            // Contamos por separado según el tipo_venta
+            ->selectRaw("SUM(CASE WHEN tipo_venta = 'caja' THEN cantidad ELSE 0 END) as total_cajas")
+            ->selectRaw("SUM(CASE WHEN tipo_venta = 'unidad' THEN cantidad ELSE 0 END) as total_unidades")
             ->with('producto:id,nombre')
             ->whereHas('venta', fn($query) => $query->where('activa', 1))
             ->groupBy('producto_id')
@@ -39,8 +43,9 @@ class DashboardController extends Controller
             ->map(fn($detalle) => (object) [
                 'nombre' => $detalle->producto->nombre ?? 'Desconocido',
                 'total_vendido' => $detalle->total_vendido,
+                'total_cajas' => $detalle->total_cajas,     // <--- Nuevo
+                'total_unidades' => $detalle->total_unidades // <--- Nuevo
             ]);
-
         $totalVentas = (clone $ventasActivas)->sum('total') ?: 1;
         $metodosPago = (clone $ventasActivas)
             ->select('metodo_pago', DB::raw('SUM(total) as total'))
