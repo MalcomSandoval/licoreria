@@ -245,7 +245,7 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 text-center hidden sm:table-cell">
-                            <span class="text-white font-medium bg-app-bg px-2.5 py-1 rounded-lg border border-app-accent">{{ $venta->detalles->count() }}</span>
+                            <span class="text-white font-medium bg-app-bg px-2.5 py-1 rounded-lg border border-app-accent">{{ $venta->detalles->sum('cantidad') }}</span>
                         </td>
                         <td class="px-6 py-4 text-center">
                             <div class="flex justify-center gap-2">
@@ -253,7 +253,7 @@
                                     class="bg-indigo-500/10 hover:bg-indigo-500 hover:text-white text-indigo-400 border border-indigo-500/20 p-2 rounded-lg text-xs font-semibold transition-all tooltip" title="Ver Detalles">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                 </button>
-                                <button onclick="eliminarVenta('{{ $venta->id }}')"
+                                <button onclick="abrirModalConfirmacion('{{ $venta->id }}')"
                                     class="bg-red-500/10 hover:bg-red-500 hover:text-white text-red-500 border border-red-500/20 p-2 rounded-lg text-xs font-semibold transition-all tooltip" title="Anular Venta">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                 </button>
@@ -297,6 +297,28 @@
             <button onclick="imprimirRecibo()" class="px-6 py-2.5 bg-app-card border border-app-accent text-white font-medium rounded-xl hover:text-indigo-400 hover:border-indigo-400/50 transition-colors flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
                 Imprimir Copia
+            </button>
+        </div>
+    </div>
+</div>
+
+{{-- Modal de Confirmación para Eliminar Venta --}}
+<div id="modal-confirmacion" class="fixed inset-0 bg-app-bg/80 backdrop-blur-sm flex items-center justify-center p-4 z-[60] hidden opacity-0 transition-opacity duration-300">
+    <div class="bg-app-card rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.5)] border border-red-500/50 w-full max-w-sm flex flex-col transform scale-95 transition-transform duration-300" id="modal-confirmacion-content">
+        <div class="p-5 border-b border-app-accent/50 flex items-center gap-3 bg-red-500/10 rounded-t-2xl relative overflow-hidden">
+            <span class="text-2xl">⚠️</span>
+            <h3 class="text-lg font-bold text-red-500">Anular Venta</h3>
+        </div>
+        <div class="p-6 text-app-textMuted text-sm leading-relaxed">
+            ¿Estás seguro de anular esta venta?<br><br>
+            Esta acción devolverá los productos al stock de inventario y se descontará el monto de las ganancias del día.
+        </div>
+        <div class="p-4 border-t border-app-accent/50 bg-app-bg/50 rounded-b-2xl flex justify-end gap-3">
+            <button onclick="cerrarModalConfirmacion()" class="px-4 py-2 bg-app-bg border border-app-accent text-white font-medium rounded-xl hover:bg-app-accent transition-colors">
+                Cancelar
+            </button>
+            <button id="btn-confirmar-eliminar" onclick="confirmarEliminarVenta()" class="px-4 py-2 bg-red-500 hover:bg-red-600 text-white font-bold rounded-xl shadow-lg transition-colors flex items-center justify-center gap-2 min-w-[140px]">
+                Sí, Anular Venta
             </button>
         </div>
     </div>
@@ -573,7 +595,11 @@ function actualizarCantidad(index, valor) {
                 mostrarToast('Venta procesada con éxito', 'exito');
                 carrito = []; 
                 renderizarCarrito();
+                window.saleCompleted = true; // Variable para saber que debemos recargar al cerrar modal
                 if(result.venta_id) verDetalle(result.venta_id);
+                else {
+                    setTimeout(() => window.location.reload(), 1500);
+                }
             } else {
                 throw new Error(result.error || 'Error desconocido');
             }
@@ -631,12 +657,12 @@ function actualizarCantidad(index, valor) {
                         ${badgeMetodo}
                     </td>
                     <td class="px-6 py-4 text-center hidden sm:table-cell">
-                        <span class="text-white font-medium bg-app-bg px-2.5 py-1 rounded-lg border border-app-accent">${v.detalles?.length ?? 0}</span>
+                        <span class="text-white font-medium bg-app-bg px-2.5 py-1 rounded-lg border border-app-accent">${v.detalles?.reduce((acc, curr) => acc + parseFloat(curr.cantidad), 0) ?? 0}</span>
                     </td>
                     <td class="px-6 py-4 text-center">
                         <div class="flex justify-center gap-2">
                             <button onclick="verDetalle('${v.id}')" class="bg-indigo-500/10 hover:bg-indigo-500 hover:text-white text-indigo-400 border border-indigo-500/20 p-2 rounded-lg text-xs font-semibold transition-all tooltip" title="Ver Detalles"> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg> </button>
-                            <button onclick="eliminarVenta('${v.id}')" class="bg-red-500/10 hover:bg-red-500 hover:text-white text-red-500 border border-red-500/20 p-2 rounded-lg text-xs font-semibold transition-all tooltip" title="Anular"> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> </button>
+                            <button onclick="abrirModalConfirmacion('${v.id}')" class="bg-red-500/10 hover:bg-red-500 hover:text-white text-red-500 border border-red-500/20 p-2 rounded-lg text-xs font-semibold transition-all tooltip" title="Anular"> <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg> </button>
                         </div>
                     </td>
                 </tr>
@@ -738,6 +764,9 @@ function actualizarCantidad(index, valor) {
         document.getElementById('modal-detalle-content').classList.add('scale-95');
         setTimeout(() => {
             modal.classList.add('hidden');
+            if (window.saleCompleted) {
+                window.location.reload();
+            }
         }, 300);
     }
 
@@ -747,21 +776,54 @@ function actualizarCantidad(index, valor) {
         mostrarToast('Enviado a impresora (Preview)', 'exito');
     }
 
-    async function eliminarVenta(id) {
-        if (!confirm('Esta acción anulará la venta en ingresos monetarios, pero no devuelve inventario (funcionalidad limitada actualmente). ¿Desea continuar?')) return;
+    let ventaAEliminarId = null;
+
+    function abrirModalConfirmacion(id) {
+        ventaAEliminarId = id;
+        const modal = document.getElementById('modal-confirmacion');
+        modal.classList.remove('hidden');
+        setTimeout(() => {
+            modal.classList.remove('opacity-0');
+            document.getElementById('modal-confirmacion-content').classList.remove('scale-95');
+        }, 10);
+    }
+
+    function cerrarModalConfirmacion() {
+        const modal = document.getElementById('modal-confirmacion');
+        modal.classList.add('opacity-0');
+        document.getElementById('modal-confirmacion-content').classList.add('scale-95');
+        setTimeout(() => {
+            modal.classList.add('hidden');
+            ventaAEliminarId = null;
+        }, 300);
+    }
+
+    async function confirmarEliminarVenta() {
+        if (!ventaAEliminarId) return;
+        
+        const btn = document.getElementById('btn-confirmar-eliminar');
+        const txtOriginal = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = `<svg class="animate-spin h-5 w-5 mx-auto" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>`;
+
         try {
-            const response = await fetch(`/ventas/${id}`, {
+            const response = await fetch(`/ventas/${ventaAEliminarId}`, {
                 method: 'DELETE',
                 headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
             });
             const data = await response.json();
             if (data.success) {
-                document.getElementById(`venta-${id}`)?.classList.add('opacity-0', 'bg-red-500/10');
-                setTimeout(() => document.getElementById(`venta-${id}`)?.remove(), 300);
-                mostrarToast('Ticket anulado del sistema', 'exito');
+                document.getElementById(`venta-${ventaAEliminarId}`)?.classList.add('opacity-0', 'bg-red-500/10');
+                setTimeout(() => document.getElementById(`venta-${ventaAEliminarId}`)?.remove(), 300);
+                cerrarModalConfirmacion();
+                mostrarToast('Ticket anulado. Recargando estadísticas...', 'exito');
+                setTimeout(() => window.location.reload(), 1500);
             }
         } catch(e) {
             mostrarToast('Error en la eliminación', 'error');
+            btn.disabled = false;
+            btn.innerHTML = txtOriginal;
+            cerrarModalConfirmacion();
         }
     }
 
