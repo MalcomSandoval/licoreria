@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\VentaController;
 use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\ProveedorController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Models\Venta;
@@ -58,6 +59,12 @@ Route::middleware(['auth', 'user.active'])->group(function () {
     Route::put('/productos/{id}', [ProductoController::class, 'update'])->name('productos.update');
     Route::patch('/productos/{id}/desactivar', [ProductoController::class, 'desactivar'])->name('productos.desactivar');
     Route::patch('/productos/{id}/activar', [ProductoController::class, 'activar'])->name('productos.activar');
+
+    // Proveedores
+    Route::get('/proveedores', [ProveedorController::class, 'index'])->name('proveedores.index');
+    Route::post('/proveedores', [ProveedorController::class, 'store'])->name('proveedores.store');
+    Route::put('/proveedores/{id}', [ProveedorController::class, 'update'])->name('proveedores.update');
+    Route::delete('/proveedores/{id}', [ProveedorController::class, 'destroy'])->name('proveedores.destroy');
 
     // Reportes
     Route::get('/reportes', function () {
