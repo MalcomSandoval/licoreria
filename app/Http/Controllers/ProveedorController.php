@@ -12,7 +12,9 @@ class ProveedorController extends Controller
 {
     public function index()
     {
-        $proveedores = Proveedor::where('activo', 1)->latest()->get();
+        $proveedores = Proveedor::with(['productos' => function ($query) {
+            $query->where('activo', 1);
+        }])->where('activo', 1)->latest()->get();
         return view('proveedores.index', compact('proveedores'));
     }
 

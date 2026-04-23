@@ -10,16 +10,20 @@ class ProductoController extends Controller
 {
     public function index()
     {
-        $productos = Producto::all();
+        $productos = Producto::with('proveedor')->get();
+        $proveedores = \App\Models\Proveedor::where('activo', 1)->orderBy('nombre')->get();
+        
         $totalProductos = $productos->count();
         $totalActivos = $productos->where('activo', 1)->count();
         $totalInactivos = $productos->where('activo', 0)->count();
         $valorInventario = $productos->where('activo', 1)->sum(fn($p) => $p->precio * $p->stock);
-        $stockBajo = $productos->where('activo', 1)->where('stock', '<=', 5)->count();
+        // Contar como stock bajo los que están <= a su stock_critico o un base de 5.
+        $stockBajo = $productos->where('activo', 1)->filter(fn($p) => $p->stock <= ($p->stock_critico ?? 5))->count();
         $totalCategorias = $productos->where('activo', 1)->pluck('categoria')->unique()->count();
 
         return view('productos.index', compact(
             'productos',
+            'proveedores',
             'totalProductos',
             'totalActivos',
             'totalInactivos',
@@ -39,6 +43,8 @@ class ProductoController extends Controller
             'cantidad_caja' => 'nullable|integer|min:1',
             'precio_caja' => 'nullable|numeric|min:0',
             'precio_venta_caja' => 'nullable|numeric|min:0',
+            'proveedor_id' => 'nullable|string|exists:proveedores,id',
+            'stock_critico' => 'nullable|integer|min:0',
         ], [
             'nombre.unique' => 'Este nombre de producto ya está registrado en nuestro sistema o tienes algún error.',
         ]);
@@ -52,6 +58,8 @@ class ProductoController extends Controller
             'precio_caja' => $request->precio_caja,
             'precio_venta_caja' => $request->precio_venta_caja,
             'stock' => $request->stock,
+            'stock_critico' => $request->stock_critico ?? 10,
+            'proveedor_id' => $request->proveedor_id,
             'cantidad_caja' => $request->cantidad_caja,
             'categoria' => $request->categoria,
             'codigo_barras' => $request->codigo_barras,
@@ -70,6 +78,8 @@ class ProductoController extends Controller
             'cantidad_caja' => 'nullable|integer|min:1',
             'precio_caja' => 'nullable|numeric|min:0',
             'precio_venta_caja' => 'nullable|numeric|min:0',
+            'proveedor_id' => 'nullable|string|exists:proveedores,id',
+            'stock_critico' => 'nullable|integer|min:0',
         ], [
             'nombre.unique' => 'Este nombre de producto ya está registrado en nuestro sistema o tienes algún error.',
         ]);
@@ -85,6 +95,8 @@ class ProductoController extends Controller
             'precio_caja' => $request->precio_caja,
             'precio_venta_caja' => $request->precio_venta_caja,
             'stock' => $nuevoStock,
+            'stock_critico' => $request->stock_critico ?? $producto->stock_critico,
+            'proveedor_id' => $request->proveedor_id,
             'cantidad_caja' => $request->cantidad_caja,
             'categoria' => $request->categoria,
             'codigo_barras' => $request->codigo_barras,

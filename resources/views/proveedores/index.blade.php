@@ -109,6 +109,41 @@
                                 </span>
                             </div>
                         @endif
+                        @php
+                            $productosCriticos = $p->productos->filter(function($prod) {
+                                return $prod->stock <= $prod->stock_critico;
+                            });
+                        @endphp
+                        @if($productosCriticos->count() > 0)
+                            <div class="mt-4 pt-4 border-t border-red-500/20">
+                                <h4 class="text-xs font-bold text-red-400 uppercase tracking-wider mb-2 flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                    Reporte Crítico ({{ $productosCriticos->count() }})
+                                </h4>
+                                <ul class="space-y-1.5">
+                                    @foreach($productosCriticos->take(3) as $pd)
+                                        <li class="flex justify-between items-center text-xs bg-red-500/10 border border-red-500/20 px-2.5 py-1.5 rounded-lg">
+                                            <span class="text-white truncate pr-2" title="{{ $pd->nombre }}">{{ $pd->nombre }}</span>
+                                            <span class="text-red-400 font-bold whitespace-nowrap bg-red-500/20 px-1.5 py-0.5 rounded">{{ $pd->stock }} un</span>
+                                        </li>
+                                    @endforeach
+                                    @if($productosCriticos->count() > 3)
+                                        <li class="text-xs text-red-400 text-center block pt-1 font-medium">
+                                            +{{ $productosCriticos->count() - 3 }} productos más...
+                                        </li>
+                                    @endif
+                                </ul>
+                            </div>
+                        @else
+                            @if($p->productos->count() > 0)
+                            <div class="mt-4 pt-4 border-t border-green-500/20">
+                                <span class="bg-green-500/10 text-green-400 text-xs px-2.5 py-1.5 rounded-lg border border-green-500/20 font-medium flex items-center justify-center gap-1.5 w-full">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    Stock óptimo ({{ $p->productos->count() }} prod)
+                                </span>
+                            </div>
+                            @endif
+                        @endif
                     </div>
                 </div>
             @endforeach

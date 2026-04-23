@@ -227,6 +227,17 @@
                         </tr>
                     </thead>
                     <tbody id="productos-list" class="divide-y divide-app-accent/30 text-sm">
+                        @php
+                            $catColors = [
+                                'General' => 'bg-slate-500/10 text-slate-400 border border-slate-500/20',
+                                'Bebidas' => 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20',
+                                'Snacks' => 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
+                                'Congelados' => 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20',
+                                'Lácteos' => 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
+                                'Dulces' => 'bg-pink-500/10 text-pink-400 border border-pink-500/20',
+                                'Cigarros' => 'bg-stone-500/10 text-stone-400 border border-stone-500/20',
+                            ];
+                        @endphp
                         @forelse($productos->where('activo', 1) as $producto)
                             <tr class="hover:bg-app-bg/50 transition-colors group" id="prod-{{ $producto->id }}">
                                 <td class="px-6 py-4">
@@ -242,7 +253,7 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <span
-                                        class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs px-2.5 py-1 rounded-lg">{{ $producto->categoria }}</span>
+                                        class="{{ $catColors[$producto->categoria] ?? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' }} text-xs px-2.5 py-1 rounded-lg">{{ $producto->categoria }}</span>
                                 </td>
                                 <td class="px-6 py-4 font-medium text-white">${{ number_format($producto->precio, 2) }}</td>
                                 <td class="px-6 py-4">
@@ -335,6 +346,17 @@
                         </div>
 
                         <div>
+                            <label class="block text-xs font-semibold text-app-textMuted uppercase tracking-wider mb-2">Proveedor</label>
+                            <select id="f-proveedor_id"
+                                class="w-full px-4 py-3 bg-app-bg border border-app-accent rounded-xl text-white focus:outline-none focus:border-app-primary focus:ring-1 focus:ring-app-primary transition outline-none appearance-none">
+                                <option value="">Sin proveedor asociado</option>
+                                @foreach($proveedores as $prov)
+                                    <option value="{{ $prov->id }}">{{ $prov->nombre }} ({{ $prov->empresa }})</option>
+                                @endforeach
+                            </select>
+                        </div>
+
+                        <div>
                             <label
                                 class="block text-xs font-semibold text-app-textMuted uppercase tracking-wider mb-2">Precio
                                 Venta *</label>
@@ -391,6 +413,15 @@
                             <input type="number" min="0" id="f-stock"
                                 class="w-full px-4 py-3 bg-app-bg border border-app-accent rounded-xl text-white focus:outline-none focus:border-app-primary focus:ring-1 focus:ring-app-primary transition"
                                 placeholder="0">
+                        </div>
+
+                        <div>
+                            <label
+                                class="block text-xs font-semibold text-app-textMuted uppercase tracking-wider mb-2">Stock
+                                Crítico (Alerta)</label>
+                            <input type="number" min="0" id="f-stock_critico" value="10"
+                                class="w-full px-4 py-3 bg-app-bg border border-app-accent rounded-xl text-white focus:outline-none focus:border-app-primary focus:ring-1 focus:ring-app-primary transition"
+                                placeholder="10">
                         </div>
 
                         <div id="suma-stock-container"
@@ -493,6 +524,8 @@
             document.getElementById('modal-titulo').innerHTML = '<span class="text-app-primary">✨</span> Nuevo Producto';
             document.getElementById('btn-texto').textContent = 'Crear Producto';
             document.getElementById('producto-form').reset();
+            document.getElementById('f-proveedor_id').value = '';
+            document.getElementById('f-stock_critico').value = '10';
             document.getElementById('producto-id').value = '';
             document.getElementById('suma-stock-container').classList.add('hidden');
             document.getElementById('f-stock').readOnly = false;
@@ -523,6 +556,8 @@
             document.getElementById('f-stock').classList.add('opacity-50', 'bg-app-bg');
             document.getElementById('f-suma-stock').value = 0;
             document.getElementById('suma-stock-container').classList.remove('hidden');
+            document.getElementById('f-stock_critico').value = producto.stock_critico ?? 10;
+            document.getElementById('f-proveedor_id').value = producto.proveedor_id ?? '';
             document.getElementById('f-categoria').value = producto.categoria;
             document.getElementById('f-codigo').value = producto.codigo_barras ?? '';
             document.getElementById('f-descripcion').value = producto.descripcion ?? '';
@@ -635,8 +670,10 @@
         precio_caja: parseFloat(document.getElementById('f-precio-caja').value) || 0,
         precio_venta_caja: parseFloat(document.getElementById('f-precio-venta-caja').value) || 0,
         stock: parseInt(document.getElementById('f-stock').value) || 0,
+        stock_critico: parseInt(document.getElementById('f-stock_critico').value) || 10,
         suma_stock: parseInt(document.getElementById('f-suma-stock').value) || 0,
         cantidad_caja: parseInt(document.getElementById('f-cantidad-caja').value) || null,
+        proveedor_id: document.getElementById('f-proveedor_id').value || null,
         categoria: document.getElementById('f-categoria').value,
         codigo_barras: document.getElementById('f-codigo').value.trim(),
         descripcion: document.getElementById('f-descripcion').value.trim(),
@@ -755,9 +792,20 @@
                     }
 
                     tbody.innerHTML = productos.map(p => {
-                        const isBajo = p.stock <= 5;
-                        const stockClasses = isBajo ? 'text-red-400 bg-red-400/10 px-2 py-0.5 rounded' :
-                            'text-emerald-400';
+                        // Count as "bajo" dynamically if we had the field, but locally 5 is safe fallback
+                        const isBajo = p.stock <= (p.stock_critico ?? 5);
+                        const stockClasses = isBajo ? 'text-red-400 bg-red-400/10 px-2 py-0.5 rounded' : 'text-emerald-400';
+
+                        const catColorsJS = {
+                            'General': 'bg-slate-500/10 text-slate-400 border border-slate-500/20',
+                            'Bebidas': 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20',
+                            'Snacks': 'bg-amber-500/10 text-amber-400 border border-amber-500/20',
+                            'Congelados': 'bg-cyan-500/10 text-cyan-400 border border-cyan-500/20',
+                            'Lácteos': 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20',
+                            'Dulces': 'bg-pink-500/10 text-pink-400 border border-pink-500/20',
+                            'Cigarros': 'bg-stone-500/10 text-stone-400 border border-stone-500/20',
+                        };
+                        const catClass = catColorsJS[p.categoria] || 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20';
 
                         return `
                         <tr class="hover:bg-app-bg/50 transition-colors group ${p.activo ? '' : 'opacity-60 bg-red-500/5'}" id="prod-${p.id}">
@@ -766,7 +814,7 @@
                                 ${p.codigo_barras ? `<div class="text-xs text-app-textMuted/70 mt-1 font-mono bg-app-bg inline-block px-2 py-0.5 rounded border border-app-accent/50">${p.codigo_barras}</div>` : ''}
                             </td>
                             <td class="px-6 py-4">
-                                <span class="bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 text-xs px-2.5 py-1 rounded-lg">${p.categoria}</span>
+                                <span class="${catClass} text-xs px-2.5 py-1 rounded-lg">${p.categoria}</span>
                             </td>
                             <td class="px-6 py-4 font-medium text-white">$${parseFloat(p.precio).toFixed(2)}</td>
                             <td class="px-6 py-4">

@@ -25,4 +25,9 @@ class Proveedor extends Model
     protected $casts = [
         'activo' => 'boolean',
     ];
+
+    public function productos()
+    {
+        return $this->hasMany(Producto::class, 'proveedor_id');
+    }
 }

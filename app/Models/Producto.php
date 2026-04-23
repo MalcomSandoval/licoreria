@@ -23,12 +23,19 @@ class Producto extends Model
         'precio_caja',        
         'precio_venta_caja',
         'stock',
+        'stock_critico',
         'cantidad_caja',
         'categoria',
+        'proveedor_id',
         'codigo_barras',
         'activo',
         'updated_by'
     ];
+
+    public function proveedor()
+    {
+        return $this->belongsTo(Proveedor::class, 'proveedor_id');
+    }
 
     protected $casts = [
         'precio' => 'decimal:2',
