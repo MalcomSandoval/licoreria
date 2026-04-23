@@ -45,7 +45,7 @@
         }
     </script>
 </head>
-<body class="bg-app-bg text-app-textMain min-h-screen flex items-center justify-center font-sans p-4 sm:p-6 lg:p-8 relative overflow-hidden">
+<body class="bg-app-bg text-app-textMain min-h-screen flex items-center justify-center font-sans p-4 sm:p-6 lg:p-8 relative overflow-y-auto">
     
     <!-- Ambient Background Lighting -->
     <div class="absolute inset-0 z-0 overflow-hidden pointer-events-none">
