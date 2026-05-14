@@ -57,7 +57,7 @@ CREATE TABLE IF NOT EXISTS `detalles_venta` (
   CONSTRAINT `detalles_venta_ibfk_2` FOREIGN KEY (`producto_id`) REFERENCES `productos` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Volcando datos para la tabla tienda_db.detalles_venta: ~2 rows (aproximadamente)
+-- Volcando datos para la tabla tienda_db.detalles_venta: ~433 rows (aproximadamente)
 INSERT INTO `detalles_venta` (`id`, `venta_id`, `producto_id`, `tipo_venta`, `cantidad`, `precio_unitario`, `subtotal`, `precio_compra`) VALUES
 	('0037814b-8dfc-40ff-be21-33e238a4f762', '9a137d38-0420-49ea-a5e9-442000b68e32', '4ca918d8-3205-40ba-b81a-bd106f8d03cf', 'unidad', 1, 7.00, 7.00, 4.00),
 	('00c87df2-6cd3-4047-abaf-1e6620dc63f6', 'c90f38e5-4a38-49d4-bd51-23ca84268c8f', '5a990c66-09ed-49cf-a841-5abcdc8197a6', 'unidad', 2, 10.00, 20.00, 6.00),
@@ -496,20 +496,21 @@ INSERT INTO `detalles_venta` (`id`, `venta_id`, `producto_id`, `tipo_venta`, `ca
 -- Volcando estructura para tabla tienda_db.migrations
 CREATE TABLE IF NOT EXISTS `migrations` (
   `id` int unsigned NOT NULL AUTO_INCREMENT,
-  `migration` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `migration` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `batch` int NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla tienda_db.migrations: ~0 rows (aproximadamente)
+-- Volcando datos para la tabla tienda_db.migrations: ~3 rows (aproximadamente)
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES
 	(1, '0001_01_01_000000_create_users_table', 1),
-	(2, '2026_04_14_172007_create_proveedors_table', 2);
+	(2, '2026_04_14_172007_create_proveedors_table', 2),
+	(3, '2026_05_14_000000_add_link_web_to_proveedores_table', 3);
 
 -- Volcando estructura para tabla tienda_db.password_reset_tokens
 CREATE TABLE IF NOT EXISTS `password_reset_tokens` (
-  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `token` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -537,7 +538,7 @@ CREATE TABLE IF NOT EXISTS `productos` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Volcando datos para la tabla tienda_db.productos: ~12 rows (aproximadamente)
+-- Volcando datos para la tabla tienda_db.productos: ~29 rows (aproximadamente)
 INSERT INTO `productos` (`id`, `nombre`, `descripcion`, `stock`, `stock_critico`, `precio`, `precio_compra`, `precio_venta_caja`, `precio_caja`, `cantidad_caja`, `categoria`, `proveedor_id`, `codigo_barras`, `activo`, `created_at`, `updated_at`) VALUES
 	('133fa6c9-9551-48be-9e61-45775aec0a1a', 'Queso Blanco Rallado 500g', NULL, 3, 15, 4.00, 2.80, NULL, NULL, NULL, 'Lácteos', '8c156935-8719-471e-a562-6292651269d2', NULL, 1, '2026-04-23 18:10:44', '2026-04-23 18:10:44'),
 	('1bc1cd9e-7339-403e-8b1e-51b0f489e88d', 'Marlboro Rojo (Cajetilla)', NULL, 26, 10, 4.50, 3.00, NULL, NULL, NULL, 'Cigarros', '02d4328b-c2e6-4658-a93a-a5061e4a4faf', NULL, 1, '2026-04-23 18:10:44', '2026-04-23 18:10:44'),
@@ -571,34 +572,35 @@ INSERT INTO `productos` (`id`, `nombre`, `descripcion`, `stock`, `stock_critico`
 
 -- Volcando estructura para tabla tienda_db.proveedores
 CREATE TABLE IF NOT EXISTS `proveedores` (
-  `id` char(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `nombre` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `empresa` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `telefono` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `email` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `direccion` text COLLATE utf8mb4_unicode_ci,
-  `frecuencia_visita` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `id` char(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `nombre` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `empresa` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `telefono` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `link_web` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `direccion` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `frecuencia_visita` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `activo` tinyint(1) NOT NULL DEFAULT '1',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- Volcando datos para la tabla tienda_db.proveedores: ~1 rows (aproximadamente)
-INSERT INTO `proveedores` (`id`, `nombre`, `empresa`, `telefono`, `email`, `direccion`, `frecuencia_visita`, `activo`, `created_at`, `updated_at`) VALUES
-	('02d4328b-c2e6-4658-a93a-a5061e4a4faf', 'Surtidora Regional Los Andes', 'Independiente', NULL, NULL, NULL, NULL, 1, '2026-04-23 18:08:48', '2026-04-23 18:08:48'),
-	('2a48902b-d0a6-4183-91b6-2a55cd93f514', 'Representaciones Pernod Ricard', 'Pernod Ricard', NULL, NULL, NULL, NULL, 1, '2026-04-23 18:08:48', '2026-04-23 18:08:48'),
-	('2d8e8bb8-256b-4c6e-86b5-f01fefb47c1e', 'Distribución Diageo Venezuela', 'Diageo', NULL, NULL, NULL, NULL, 1, '2026-04-23 18:08:48', '2026-04-23 18:08:48'),
-	('8c156935-8719-471e-a562-6292651269d2', 'malcom', 'babaroa', '3009778217', 'malcomsandoval04@gmail.com', NULL, 'cada 3 dias', 1, '2026-04-20 22:46:27', '2026-04-20 22:46:27'),
-	('d92b0283-4c86-4a3f-9ef7-57cc760885b8', 'Ventas Cervecería Polar', 'Empresas Polar', NULL, NULL, NULL, NULL, 1, '2026-04-23 18:08:48', '2026-04-23 18:08:48');
+-- Volcando datos para la tabla tienda_db.proveedores: ~5 rows (aproximadamente)
+INSERT INTO `proveedores` (`id`, `nombre`, `empresa`, `telefono`, `email`, `link_web`, `direccion`, `frecuencia_visita`, `activo`, `created_at`, `updated_at`) VALUES
+	('02d4328b-c2e6-4658-a93a-a5061e4a4faf', 'Surtidora Regional Los Andes', 'Independiente', NULL, NULL, NULL, NULL, NULL, 1, '2026-04-23 18:08:48', '2026-04-23 18:08:48'),
+	('2a48902b-d0a6-4183-91b6-2a55cd93f514', 'Representaciones Pernod Ricard', 'Pernod Ricard', NULL, NULL, NULL, NULL, NULL, 1, '2026-04-23 18:08:48', '2026-05-15 01:35:09'),
+	('2d8e8bb8-256b-4c6e-86b5-f01fefb47c1e', 'Distribución Diageo Venezuela', 'Diageo', NULL, NULL, NULL, NULL, NULL, 1, '2026-04-23 18:08:48', '2026-04-23 18:08:48'),
+	('8c156935-8719-471e-a562-6292651269d2', 'malcom', 'babaroa', '3009778217', 'malcomsandoval04@gmail.com', NULL, NULL, 'cada 3 dias', 1, '2026-04-20 22:46:27', '2026-04-20 22:46:27'),
+	('d92b0283-4c86-4a3f-9ef7-57cc760885b8', 'Ventas Cervecería Polar', 'Empresas Polar', NULL, NULL, NULL, NULL, NULL, 1, '2026-04-23 18:08:48', '2026-04-23 18:08:48');
 
 -- Volcando estructura para tabla tienda_db.sessions
 CREATE TABLE IF NOT EXISTS `sessions` (
-  `id` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `id` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `user_id` bigint unsigned DEFAULT NULL,
-  `ip_address` varchar(45) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `user_agent` text COLLATE utf8mb4_unicode_ci,
-  `payload` longtext COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ip_address` varchar(45) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `user_agent` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `last_activity` int NOT NULL,
   PRIMARY KEY (`id`),
   KEY `sessions_user_id_index` (`user_id`),
@@ -610,11 +612,11 @@ CREATE TABLE IF NOT EXISTS `sessions` (
 -- Volcando estructura para tabla tienda_db.users
 CREATE TABLE IF NOT EXISTS `users` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
-  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `email_verified_at` timestamp NULL DEFAULT NULL,
-  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `remember_token` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `password` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `remember_token` varchar(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -656,7 +658,7 @@ CREATE TABLE IF NOT EXISTS `ventas` (
   CONSTRAINT `ventas_ibfk_1` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
--- Volcando datos para la tabla tienda_db.ventas: ~3 rows (aproximadamente)
+-- Volcando datos para la tabla tienda_db.ventas: ~245 rows (aproximadamente)
 INSERT INTO `ventas` (`id`, `usuario_id`, `total`, `precio_compra`, `fecha_venta`, `metodo_pago`, `activa`) VALUES
 	('0057ad12-e36c-4cbb-9a78-cc876de0038d', '13648e35-197f-472c-a896-d50090561d37', 1000.00, 500.000000, '2026-02-06 01:05:31', 'Efectivo', 1),
 	('021cc923-0d10-47b4-8eeb-9fcbdbcf36ea', '13648e35-197f-472c-a896-d50090561d37', 8.00, 5.000000, '2026-04-14 11:49:53', 'Efectivo', 1),
