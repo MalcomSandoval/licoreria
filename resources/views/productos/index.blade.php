@@ -351,7 +351,9 @@
                                 class="w-full px-4 py-3 bg-app-bg border border-app-accent rounded-xl text-white focus:outline-none focus:border-app-primary focus:ring-1 focus:ring-app-primary transition outline-none appearance-none">
                                 <option value="">Sin proveedor asociado</option>
                                 @foreach($proveedores as $prov)
-                                    <option value="{{ $prov->id }}">{{ $prov->nombre }} ({{ $prov->empresa }})</option>
+                                    <option value="{{ $prov->id }}">
+                                        {{ $prov->nombre }}@if($prov->empresa) ({{ $prov->empresa }})@endif - {{ $prov->link_web ?? 'Indefinido' }}
+                                    </option>
                                 @endforeach
                             </select>
                         </div>

@@ -17,6 +17,7 @@ class Proveedor extends Model
         'empresa',
         'telefono',
         'email',
+        'link_web',
         'direccion',
         'frecuencia_visita',
         'activo'

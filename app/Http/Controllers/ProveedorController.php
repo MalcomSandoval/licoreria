@@ -25,6 +25,7 @@ class ProveedorController extends Controller
             'empresa' => 'nullable|string|max:255',
             'telefono' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
+            'link_web' => 'nullable|url|max:255',
             'direccion' => 'nullable|string',
             'frecuencia_visita' => 'nullable|string|max:255'
         ]);
@@ -35,6 +36,7 @@ class ProveedorController extends Controller
             'empresa' => $request->empresa,
             'telefono' => $request->telefono,
             'email' => $request->email,
+            'link_web' => $request->link_web,
             'direccion' => $request->direccion,
             'frecuencia_visita' => $request->frecuencia_visita,
             'activo' => 1
@@ -50,6 +52,7 @@ class ProveedorController extends Controller
             'empresa' => 'nullable|string|max:255',
             'telefono' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
+            'link_web' => 'nullable|url|max:255',
             'direccion' => 'nullable|string',
             'frecuencia_visita' => 'nullable|string|max:255'
         ]);

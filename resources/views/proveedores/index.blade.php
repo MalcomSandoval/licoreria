@@ -24,6 +24,7 @@
             document.getElementById('empresa').value = proveedor.empresa || '';
             document.getElementById('telefono').value = proveedor.telefono || '';
             document.getElementById('email').value = proveedor.email || '';
+            document.getElementById('link_web').value = proveedor.link_web || '';
             document.getElementById('direccion').value = proveedor.direccion || '';
             document.getElementById('frecuencia_visita').value = proveedor.frecuencia_visita || '';
         }
@@ -102,6 +103,14 @@
                                 <span class="truncate">{{ $p->email }}</span>
                             </div>
                         @endif
+                        <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 14.828a4 4 0 010-5.656l2.828-2.828a4 4 0 015.656 5.656l-2.828 2.828a4 4 0 01-5.656 0zm-7.071-7.071a4 4 0 015.656 0l2.828 2.828a4 4 0 01-5.656 5.656L4.757 13.414a4 4 0 010-5.657z"></path></svg>
+                            @if($p->link_web)
+                                <a href="{{ $p->link_web }}" target="_blank" rel="noopener noreferrer" class="truncate text-indigo-300 hover:text-indigo-100 underline">{{ $p->link_web }}</a>
+                            @else
+                                <span class="truncate text-app-textMuted">Indefinido</span>
+                            @endif
+                        </div>
                         @if($p->frecuencia_visita)
                             <div class="flex items-center gap-2 mt-4 pt-3 border-t border-app-accent/30">
                                 <span class="bg-indigo-500/10 text-indigo-400 text-xs px-2 py-1 rounded border border-indigo-500/20 font-medium">
@@ -189,6 +198,12 @@
                         <div>
                             <label class="block text-sm font-medium text-app-textMuted mb-1">Correo Electrónico</label>
                             <input type="email" name="email" id="email"
+                                class="w-full px-4 py-3 bg-app-bg border border-app-accent rounded-xl text-white focus:outline-none focus:border-indigo-500 transition">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-app-textMuted mb-1">Link Web</label>
+                            <input type="url" name="link_web" id="link_web" placeholder="https://ejemplo.com (opcional, si está vacío será Indefinido)"
                                 class="w-full px-4 py-3 bg-app-bg border border-app-accent rounded-xl text-white focus:outline-none focus:border-indigo-500 transition">
                         </div>
                         
