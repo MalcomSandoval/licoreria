@@ -99,7 +99,7 @@
                         ${{ $valorInventario >= 1000000
         ? number_format($valorInventario / 1000000, 2) . 'M'
         : ($valorInventario >= 1000 ? number_format($valorInventario / 1000, 1) . 'K' : number_format($valorInventario, 2)) 
-                                                                                                                            }}
+                                                                                                                                    }}
                     </p>
 
                     <p
@@ -383,6 +383,19 @@
                         </select>
                     </div>
 
+                    {{-- Cantidad por Caja --}}
+                    <div>
+                        <label class="block text-xs font-semibold text-app-textMuted uppercase tracking-wider mb-2">
+                            Cantidad por Caja
+                        </label>
+                        <div class="relative">
+                            <input type="number" min="1" id="f-cantidad-caja"
+                                class="w-full pl-10 pr-4 py-3 bg-app-bg border border-app-accent rounded-xl text-white focus:outline-none focus:border-app-primary focus:ring-1 focus:ring-app-primary transition"
+                                placeholder="24">
+                        </div>
+                        <p class="text-[10px] text-app-textMuted/50 mt-1 ml-1">Unidades que trae cada caja/paca</p>
+                    </div>
+
                     <div>
                         <label
                             class="block text-xs font-semibold text-app-textMuted uppercase tracking-wider mb-2">Precio
@@ -458,19 +471,6 @@
                         <input type="number" min="0" id="f-suma-stock" value="0"
                             class="w-full px-4 py-3 bg-app-bg border border-emerald-500/30 rounded-lg text-white focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition"
                             placeholder="Cantidad a sumar">
-                    </div>
-
-                    {{-- Cantidad por Caja --}}
-                    <div>
-                        <label class="block text-xs font-semibold text-app-textMuted uppercase tracking-wider mb-2">
-                            Cantidad por Caja
-                        </label>
-                        <div class="relative">
-                            <input type="number" min="1" id="f-cantidad-caja"
-                                class="w-full pl-10 pr-4 py-3 bg-app-bg border border-app-accent rounded-xl text-white focus:outline-none focus:border-app-primary focus:ring-1 focus:ring-app-primary transition"
-                                placeholder="24">
-                        </div>
-                        <p class="text-[10px] text-app-textMuted/50 mt-1 ml-1">Unidades que trae cada caja/paca</p>
                     </div>
 
                     <div class="md:col-span-2">
@@ -812,10 +812,10 @@ function filtrarProductos() {
             if (productos.length === 0) {
                 tbody.innerHTML =
                     `
-                                                                                                                        <tr><td colspan="6" class="px-6 py-16 text-center text-app-textMuted bg-app-bg/20">
-                                                                                                                            <div class="text-5xl mb-4 opacity-30">🔍</div>
-                                                                                                                            <p class="text-sm">No hay resultados para esta búsqueda</p>
-                                                                                                                        </td></tr>`;
+                                                                                                                                <tr><td colspan="6" class="px-6 py-16 text-center text-app-textMuted bg-app-bg/20">
+                                                                                                                                    <div class="text-5xl mb-4 opacity-30">🔍</div>
+                                                                                                                                    <p class="text-sm">No hay resultados para esta búsqueda</p>
+                                                                                                                                </td></tr>`;
                 return;
             }
 
@@ -838,31 +838,31 @@ function filtrarProductos() {
                     'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20';
 
                 return `
-                                                                                                                        <tr class="hover:bg-app-bg/50 transition-colors group ${p.activo ? '' : 'opacity-60 bg-red-500/5'}" id="prod-${p.id}">
-                                                                                                                            <td class="px-6 py-4">
-                                                                                                                                <div class="font-semibold text-white group-hover:text-app-primary transition-colors">${p.nombre}</div>
-                                                                                                                                ${p.codigo_barras ? `<div class="text-xs text-app-textMuted/70 mt-1 font-mono bg-app-bg inline-block px-2 py-0.5 rounded border border-app-accent/50">${p.codigo_barras}</div>` : ''}
-                                                                                                                            </td>
-                                                                                                                            <td class="px-6 py-4">
-                                                                                                                                <span class="${catClass} text-xs px-2.5 py-1 rounded-lg">${p.categoria}</span>
-                                                                                                                            </td>
-                                                                                                                            <td class="px-6 py-4 font-medium text-white">$${parseFloat(p.precio).toFixed(2)}</td>
-                                                                                                                            <td class="px-6 py-4">
-                                                                                                                                <span class="font-bold inline-block text-center min-w-[30px] ${stockClasses}">${p.stock}</span>
-                                                                                                                            </td>
-                                                                                                                            <td class="px-6 py-4 text-app-textMuted hidden md:table-cell">$${(parseFloat(p.precio) * p.stock).toFixed(2)}</td>
-                                                                                                                            <td class="px-6 py-4 text-center">
-                                                                                                                                <div class="flex justify-center gap-2">
-                                                                                                                                    <button onclick='editarProducto(${JSON.stringify(p)})' 
-                                                                                                                                        class="bg-amber-500/10 hover:bg-amber-500 hover:text-white text-amber-500 border border-amber-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all">Editar</button>
-                                                                                                                                    ${p.activo
+                                                                                                                                <tr class="hover:bg-app-bg/50 transition-colors group ${p.activo ? '' : 'opacity-60 bg-red-500/5'}" id="prod-${p.id}">
+                                                                                                                                    <td class="px-6 py-4">
+                                                                                                                                        <div class="font-semibold text-white group-hover:text-app-primary transition-colors">${p.nombre}</div>
+                                                                                                                                        ${p.codigo_barras ? `<div class="text-xs text-app-textMuted/70 mt-1 font-mono bg-app-bg inline-block px-2 py-0.5 rounded border border-app-accent/50">${p.codigo_barras}</div>` : ''}
+                                                                                                                                    </td>
+                                                                                                                                    <td class="px-6 py-4">
+                                                                                                                                        <span class="${catClass} text-xs px-2.5 py-1 rounded-lg">${p.categoria}</span>
+                                                                                                                                    </td>
+                                                                                                                                    <td class="px-6 py-4 font-medium text-white">$${parseFloat(p.precio).toFixed(2)}</td>
+                                                                                                                                    <td class="px-6 py-4">
+                                                                                                                                        <span class="font-bold inline-block text-center min-w-[30px] ${stockClasses}">${p.stock}</span>
+                                                                                                                                    </td>
+                                                                                                                                    <td class="px-6 py-4 text-app-textMuted hidden md:table-cell">$${(parseFloat(p.precio) * p.stock).toFixed(2)}</td>
+                                                                                                                                    <td class="px-6 py-4 text-center">
+                                                                                                                                        <div class="flex justify-center gap-2">
+                                                                                                                                            <button onclick='editarProducto(${JSON.stringify(p)})' 
+                                                                                                                                                class="bg-amber-500/10 hover:bg-amber-500 hover:text-white text-amber-500 border border-amber-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all">Editar</button>
+                                                                                                                                            ${p.activo
                                 ? `<button onclick="desactivarProducto('${p.id}')" class="bg-red-500/10 hover:bg-red-500 hover:text-white text-red-500 border border-red-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all">Desactivar</button>`
                                 : `<button onclick="activarProducto('${p.id}')" class="bg-emerald-500/10 hover:bg-emerald-500 hover:text-white text-emerald-500 border border-emerald-500/20 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all">Activar</button>`
                             }
-                                                                                                                                </div>
-                                                                                                                            </td>
-                                                                                                                        </tr>
-                                                                                                                    `;
+                                                                                                                                        </div>
+                                                                                                                                    </td>
+                                                                                                                                </tr>
+                                                                                                                            `;
             }).join('');
         } catch (e) {
             tbody.style.opacity = '1';
@@ -873,11 +873,12 @@ function filtrarProductos() {
 
 function mostrarMsgForm(msg, tipo) {
     const isError = tipo === 'error';
-    document.getElementById('form-messages').innerHTML = `
-                                                                                                            <div class="flex items-center gap-3 p-4 rounded-xl text-sm font-medium ${isError ? 'bg-red-500/10 text-red-400 border border-red-500/30' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'}">
-                                                                                                                <span class="text-xl">${isError ? '❌' : '✅'}</span>
-                                                                                                                ${msg}
-                                                                                                            </div>`;
+    document.getElementById('form-messages').innerHTML =
+        `
+                                                                                                                    <div class="flex items-center gap-3 p-4 rounded-xl text-sm font-medium ${isError ? 'bg-red-500/10 text-red-400 border border-red-500/30' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30'}">
+                                                                                                                        <span class="text-xl">${isError ? '❌' : '✅'}</span>
+                                                                                                                        ${msg}
+                                                                                                                    </div>`;
     setTimeout(() => document.getElementById('form-messages').innerHTML = '', 5000);
 }
 
@@ -918,12 +919,13 @@ async function mostrarDetallesStock() {
             lista.innerHTML =
                 '<li class="text-emerald-500 font-medium bg-emerald-500/10 p-2 rounded-lg text-center">Todo en orden ✅</li>';
         } else {
-            lista.innerHTML = productos.map(p => `
-                                                                                                                    <li class="flex justify-between items-center py-1.5 border-b border-app-accent/30 last:border-0 hover:bg-app-bg px-2 rounded -mx-2">
-                                                                                                                        <span class="truncate pr-2">${p.nombre}</span>
-                                                                                                                        <span class="font-bold text-red-400 bg-red-400/10 px-2 rounded py-0.5 text-xs">${p.stock}</span>
-                                                                                                                    </li>
-                                                                                                                `)
+            lista.innerHTML = productos.map(p =>
+                    `
+                                                                                                                            <li class="flex justify-between items-center py-1.5 border-b border-app-accent/30 last:border-0 hover:bg-app-bg px-2 rounded -mx-2">
+                                                                                                                                <span class="truncate pr-2">${p.nombre}</span>
+                                                                                                                                <span class="font-bold text-red-400 bg-red-400/10 px-2 rounded py-0.5 text-xs">${p.stock}</span>
+                                                                                                                            </li>
+                                                                                                                        `)
                 .join(
                     '');
         }
@@ -943,15 +945,16 @@ async function mostrarDetallesCategorias() {
         const categorias = [...new Set(productos.map(p => p.categoria))];
 
         lista.innerHTML = categorias.map(c => `
-                                                                                                                <li class="flex justify-between items-center py-1.5 hover:bg-app-bg px-2 rounded -mx-2 transition-colors border-b border-app-accent/30 last:border-0">
-                                                                                                                    <div class="flex items-center gap-2">
-                                                                                                                        <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span>
-                                                                                                                        <span class="font-medium">${c}</span>
-                                                                                                                    </div>
-                                                                                                                    <span class="text-xs text-app-textMuted bg-app-bg px-2 rounded-lg">${productos.filter(p => p.categoria === c).length}</span>
-                                                                                                                </li>
-                                                                                                            `).join(
-        '');
+                                                                                                                        <li class="flex justify-between items-center py-1.5 hover:bg-app-bg px-2 rounded -mx-2 transition-colors border-b border-app-accent/30 last:border-0">
+                                                                                                                            <div class="flex items-center gap-2">
+                                                                                                                                <span class="w-1.5 h-1.5 bg-indigo-500 rounded-full shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span>
+                                                                                                                                <span class="font-medium">${c}</span>
+                                                                                                                            </div>
+                                                                                                                            <span class="text-xs text-app-textMuted bg-app-bg px-2 rounded-lg">${productos.filter(p => p.categoria === c).length}</span>
+                                                                                                                        </li>
+                                                                                                                    `)
+            .join(
+                '');
         categoriasCargadas = true;
     } catch (e) {
         lista.innerHTML = '<li class="text-red-400 text-xs">Error de conexión</li>';
