@@ -165,7 +165,7 @@
                 class="absolute top-full right-0 mt-3 w-56 bg-app-card border border-app-accent shadow-2xl rounded-xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50 p-4">
                 <h4 class="text-xs font-bold text-indigo-400 uppercase mb-3 border-b border-app-accent/50 pb-2">En Uso
                 </h4>
-                <ul id="lista-hover-categorias" class="text-sm text-app-textMain space-y-2">
+                <ul id="lista-hover-categorias" class="text-sm text-app-textMain space-y-2 max-h-48 overflow-y-auto pr-2">
                     <li class="py-1 text-app-textMuted">Cargando...</li>
                 </ul>
             </div>
