@@ -40,7 +40,7 @@
             class="bg-app-card rounded-2xl shadow-lg border border-app-accent/50 p-5 hover:border-blue-500/50 transition-colors group">
             <h3 class="text-app-textMuted text-xs font-semibold uppercase tracking-wider mb-2">Total</h3>
             <div class="flex items-end justify-between">
-                <p class="text-2xl sm:text-3xl font-bold text-white group-hover:text-blue-400 transition-colors">
+                <p id="total-productos" class="text-2xl sm:text-3xl font-bold text-white group-hover:text-blue-400 transition-colors">
                     {{ $totalProductos }}
                 </p>
                 <div class="text-blue-400/50 group-hover:text-blue-400 transition-colors">
@@ -56,7 +56,7 @@
             class="bg-app-card rounded-2xl shadow-lg border border-app-accent/50 p-5 hover:border-emerald-500/50 transition-colors group">
             <h3 class="text-app-textMuted text-xs font-semibold uppercase tracking-wider mb-2">Activos</h3>
             <div class="flex items-end justify-between">
-                <p class="text-2xl sm:text-3xl font-bold text-white group-hover:text-emerald-400 transition-colors">
+                <p id="total-activos" class="text-2xl sm:text-3xl font-bold text-white group-hover:text-emerald-400 transition-colors">
                     {{ $totalActivos }}
                 </p>
                 <div class="text-emerald-400/50 group-hover:text-emerald-400 transition-colors">
@@ -72,7 +72,7 @@
             class="bg-app-card rounded-2xl shadow-lg border border-app-accent/50 p-5 hover:border-slate-500/50 transition-colors group">
             <h3 class="text-app-textMuted text-xs font-semibold uppercase tracking-wider mb-2">Inactivos</h3>
             <div class="flex items-end justify-between">
-                <p class="text-2xl sm:text-3xl font-bold text-white group-hover:text-slate-400 transition-colors">
+                <p id="total-inactivos" class="text-2xl sm:text-3xl font-bold text-white group-hover:text-slate-400 transition-colors">
                     {{ $totalInactivos }}
                 </p>
                 <div class="text-slate-400/50 group-hover:text-slate-400 transition-colors">
@@ -747,6 +747,20 @@ async function guardarProducto() {
     }
 }
 
+function actualizarContadoresProducto(cambioActivos, cambioInactivos) {
+    const activoEl = document.getElementById('total-activos');
+    const inactivoEl = document.getElementById('total-inactivos');
+
+    if (activoEl) {
+        const valorActual = parseInt(activoEl.textContent || '0', 10);
+        activoEl.textContent = Math.max(0, valorActual + cambioActivos);
+    }
+    if (inactivoEl) {
+        const valorActual = parseInt(inactivoEl.textContent || '0', 10);
+        inactivoEl.textContent = Math.max(0, valorActual + cambioInactivos);
+    }
+}
+
 async function desactivarProducto(id) {
     if (!confirm('¿Seguro que deseas desactivar este producto del inventario?')) return;
 
@@ -759,9 +773,9 @@ async function desactivarProducto(id) {
         });
         const data = await res.json();
         if (data.success) {
-            document.getElementById(`prod-${id}`)?.classList.add('opacity-0', '-translate-x-full');
-            setTimeout(() => document.getElementById(`prod-${id}`)?.remove(), 300);
+            actualizarContadoresProducto(-1, 1);
             mostrarToast('Producto archivado/desactivado', 'exito');
+            filtrarProductos();
         }
     } catch (e) {
         mostrarToast('Error al desactivar el producto', 'error');
@@ -778,6 +792,7 @@ async function activarProducto(id) {
         });
         const data = await res.json();
         if (data.success) {
+            actualizarContadoresProducto(1, -1);
             mostrarToast('Producto nuevamente activo', 'exito');
             filtrarProductos();
         }
