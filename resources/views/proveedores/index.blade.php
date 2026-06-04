@@ -161,8 +161,8 @@
 
     {{-- Modal Formulario --}}
     <div x-show="modalOpen" x-transition.opacity class="fixed inset-0 z-50 bg-app-bg/80 backdrop-blur-sm flex items-center justify-center p-4" style="display: none;">
-        <div @click.away="modalOpen = false" class="bg-app-card rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.5)] border border-app-accent w-full max-w-xl flex flex-col transform transition-all duration-300">
-            <form id="form-proveedor" method="POST">
+        <div @click.away="modalOpen = false" class="bg-app-card rounded-2xl shadow-[0_0_40px_rgba(0,0,0,0.5)] border border-app-accent w-full max-w-xl max-h-[85vh] flex flex-col overflow-hidden transform transition-all duration-300">
+            <form id="form-proveedor" method="POST" class="flex flex-col h-full">
                 @csrf
                 <input type="hidden" name="_method" id="method-proveedor" value="POST">
                 
@@ -175,7 +175,7 @@
                     </button>
                 </div>
                 
-                <div class="p-6 space-y-5">
+                <div class="p-6 space-y-5 overflow-y-auto max-h-[60vh]">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-app-textMuted mb-1">Nombre (Contacto) <span class="text-red-500">*</span></label>
