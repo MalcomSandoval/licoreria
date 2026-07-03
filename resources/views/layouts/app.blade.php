@@ -159,6 +159,19 @@
                             </a>
                         </li>
                         <li>
+                            <a href="{{ route('estadisticas-inventario.index') }}"
+                                class="group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('estadisticas-inventario.*') ? 'bg-app-primary/10 text-app-primary' : 'text-app-textMuted hover:bg-app-accent hover:text-white' }}">
+                                <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="none"
+                                    stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"></path>
+                                </svg>
+                                <span class="font-medium">Estadísticas de Inventario</span>
+                            </a>
+                        </li>
+                        <li>
                             <a href="{{ route('proveedores.index') }}"
                                 class="group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 {{ request()->routeIs('proveedores.*') ? 'bg-app-primary/10 text-app-primary' : 'text-app-textMuted hover:bg-app-accent hover:text-white' }}">
                                 <svg class="w-5 h-5 transition-transform group-hover:scale-110" fill="none"

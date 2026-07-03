@@ -6,6 +6,7 @@ use App\Http\Controllers\VentaController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\EstadisticaVentaController;
+use App\Http\Controllers\EstadisticaInventarioController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Models\Venta;
@@ -70,6 +71,10 @@ Route::middleware(['auth', 'user.active'])->group(function () {
     // Estadísticas de Ventas (dashboard exclusivo de ventas)
     Route::get('/estadisticas-ventas', [EstadisticaVentaController::class, 'index'])->name('estadisticas.index');
     Route::get('/estadisticas-ventas/data', [EstadisticaVentaController::class, 'data'])->name('estadisticas.data');
+
+    // Estadísticas de Inventario (dashboard exclusivo de inventario)
+    Route::get('/estadisticas-inventario', [EstadisticaInventarioController::class, 'index'])->name('estadisticas-inventario.index');
+    Route::get('/estadisticas-inventario/data', [EstadisticaInventarioController::class, 'data'])->name('estadisticas-inventario.data');
 
     // Reportes
     Route::get('/reportes', function () {
