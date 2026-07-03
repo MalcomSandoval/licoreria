@@ -25,14 +25,19 @@ class Venta extends Model
     ];
 
     protected $casts = [
-        'total'         => 'decimal:2',
+        'total' => 'decimal:2',
         'precio_compra' => 'decimal:2',
-        'fecha_venta'   => 'datetime',
-        'activa'        => 'boolean',
+        'fecha_venta' => 'datetime',
+        'activa' => 'boolean',
     ];
 
     public function detalles()
     {
         return $this->hasMany(DetalleVenta::class, 'venta_id');
+    }
+
+    public function usuario()
+    {
+        return $this->belongsTo(Usuario::class, 'usuario_id');
     }
 }

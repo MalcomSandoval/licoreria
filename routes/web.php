@@ -5,6 +5,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\VentaController;
 use App\Http\Controllers\ProductoController;
 use App\Http\Controllers\ProveedorController;
+use App\Http\Controllers\EstadisticaVentaController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
 use App\Models\Venta;
@@ -66,6 +67,10 @@ Route::middleware(['auth', 'user.active'])->group(function () {
     Route::put('/proveedores/{id}', [ProveedorController::class, 'update'])->name('proveedores.update');
     Route::delete('/proveedores/{id}', [ProveedorController::class, 'destroy'])->name('proveedores.destroy');
 
+    // Estadísticas de Ventas (dashboard exclusivo de ventas)
+    Route::get('/estadisticas-ventas', [EstadisticaVentaController::class, 'index'])->name('estadisticas.index');
+    Route::get('/estadisticas-ventas/data', [EstadisticaVentaController::class, 'data'])->name('estadisticas.data');
+
     // Reportes
     Route::get('/reportes', function () {
         return view('reportes.reportes');
@@ -101,7 +106,7 @@ Route::middleware(['auth', 'user.active'])->group(function () {
             'productos' => $productos,
         ]);
     })->name('reportes.data');
-    
+
     // --- CAMBIO DE CONTRASEÑA ---
     Route::get('/cambiar-password', [AuthController::class, 'mostrarCambiarPassword'])->name('password.edit');
     Route::put('/cambiar-password', [AuthController::class, 'actualizarPassword'])->name('password.update');
